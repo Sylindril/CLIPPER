@@ -1,0 +1,21 @@
+run_at: '2026-07-15T19:50:38-04:00'
+label: valtools_recheck
+seeds: 1..10
+workers: 12
+budget: bestj (-i0 -n<bestj> per dataset)
+slipper_flags: -R gemini/gemini-3.1-flash-lite --example-format table --schema-format
+  full --cell-format repr -T6 --value-tools --no-count-coverage
+command: uv run slipper --seed <S> -R gemini/gemini-3.1-flash-lite --example-format
+  table --schema-format full --cell-format repr -T6 --value-tools --no-count-coverage
+  -i0 -n<bestj> tuning-suite/<stem>
+bestj:
+  hypothyroid: 1
+  breast_cancer_wisconsin: 53
+  cylinder_bands: 76
+  pima_diabetes: 32
+  titanic: 96
+  abalone: 41
+  german_credit: 45
+  obesity: 97
+  student_por: 6
+  move1: 95

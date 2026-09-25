@@ -1,0 +1,33 @@
+# Advice: Wisconsin Breast Cancer (benign vs. malignant)
+
+## Core signal
+All nine features are cytological measurements graded 1–10; **higher values → more malignant, lower → benign** for every attribute. This monotonic direction holds universally here — exploit it. Malignant cells look bigger, more irregular, more variable.
+
+## Most predictive attributes (use these as rule cores)
+- **uniformity_cell_size** and **uniformity_cell_shape** — strongest separators. Cancer disrupts orderly cell architecture, so high uniformity scores (meaning high *variability*, despite the name) are a hallmark of malignancy. Benign samples cluster tightly at the low end.
+- **bare_nuclei** — very discriminative; elevated in malignant. Note: this attribute holds the **missing values** (originally coded 0/`?`). Guard against `None`/missing in `covers`.
+- **clump_thickness** — benign cells adhere in monolayers (thin), malignant in multilayers (thick).
+- **bland_chromatin**, **normal_nucleoli**, **bare_nuclei** form a strong nuclear-feature trio.
+
+## Weaker / cautionary
+- **mitoses** — highly informative when high (elevated mitosis strongly implies malignant), but the vast majority of samples sit at the floor value, so it has low coverage and is skewed. Use it as a **high-precision malignant trigger**, not a benign discriminator. Rarely useful for benign rules.
+- **single_epithelial_cell_size**, **marginal_adhesion**, **normal_nucleoli** — real but somewhat weaker/noisier alone; best combined.
+
+## Rule shapes
+- **Benign rules:** conjunction of *several* attributes all being LOW (e.g. cell size AND cell shape AND bare_nuclei all near the floor). Benign samples are compact in feature space, so multi-condition low-value rules achieve very high precision and broad coverage. This is where most benign mass lives — a couple of low-value conjunctions cover most benigns.
+- **Malignant rules:** a *single* attribute (or two) being HIGH is often enough, because high values almost never occur in benign cases. High uniformity_cell_size OR high bare_nuclei OR high clump_thickness each carry strong malignant precision. Mitoses-high is a clean malignant sniper rule.
+
+## Interactions / derived quantities
+- **Sum or average of all nine scores** is a powerful aggregate — malignant samples score high broadly, benign low broadly. Try a rule on total score.
+- **cell_size + cell_shape** combined (or their agreement) — these two are correlated and jointly very clean.
+- Because features are correlated (they co-vary with malignancy), don't expect independence; redundant conditions mostly tighten precision at some coverage cost. Prefer 2–3 attribute conjunctions over long chains.
+
+## Pitfalls
+- **Missing values live in bare_nuclei.** Your `covers` must handle missing/None safely (return False rather than erroring) or you'll misfire.
+- **Ignore the id/sample code number** entirely — it's non-predictive; any apparent signal is chronological artifact.
+- **Overlap region:** intermediate scores (mid-range on the discriminative features) are genuinely ambiguous — don't chase perfect rules there; let boosting handle the margin with lower-confidence rules.
+- **Name trap:** "uniformity" high = high *variation* = malignant. Don't invert the direction.
+- Class imbalance favors benign (~2:1); precision-focused malignant rules matter more, since a few high-value conditions cleanly isolate the minority class.
+
+## Strategy summary
+Anchor benign coverage with multi-feature all-low conjunctions; anchor malignant with single/double high-value triggers on uniformity_cell_size, uniformity_cell_shape, bare_nuclei, clump_thickness. Let the threshold tool pick cutoffs — the direction is always "high→malignant, low→benign."

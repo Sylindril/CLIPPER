@@ -1,0 +1,15 @@
+run_at: '2026-07-16T19:37:34-04:00'
+label: move1_info_tv1_valtools
+seeds: 1..10
+workers: 12
+budget: bestj (-i0 -n<bestj> per dataset)
+slipper_flags: -R gemini/gemini-3.1-flash-lite --example-format table --schema-format
+  full --cell-format repr --include-info --prompt-variant task_variant_1 -T6 --value-tools
+  --no-count-coverage
+command: uv run slipper --seed <S> -R gemini/gemini-3.1-flash-lite --example-format
+  table --schema-format full --cell-format repr --include-info --prompt-variant task_variant_1
+  -T6 --value-tools --no-count-coverage -i0 -n<bestj> tuning-suite/<stem>
+datasets:
+- move1
+bestj:
+  move1: 95

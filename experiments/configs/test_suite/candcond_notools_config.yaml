@@ -1,0 +1,23 @@
+run_at: '2026-08-01T22:15:11-04:00'
+label: candcond_notools
+sizes:
+- 175
+- 400
+- 500
+- 800
+seeds: 1..10
+workers: 12
+slipper_flags: -R gemini/gemini-3.1-flash-lite --example-format table --schema-format
+  full --cell-format repr --prompt-variant task_variant_2 -T0 --candidate-conditions
+bestj: recomputed per (dataset,size,seed) via slipper-default CV
+min_bestj: 2
+suite: test
+datasets:
+- college
+- water_potability
+- stroke
+- telco_churn
+- compas
+- heloc
+- adult
+- bank_marketing

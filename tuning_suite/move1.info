@@ -1,0 +1,18 @@
+This problem is to determine if a move made in a simple curses based
+video game was made by a expert player, or was a random move.  The
+data was collected by recording the moves made by a human player, and
+later recording the moves made by a random player.  The total
+collection of moves was then randomly split to get a training/test
+partition.
+
+Each move is defined by the direction taken (n,s,e,w) and by the
+contents of all squares within distance one of the current square.
+The content of a square is one of the values
+
+ stone - obstacle
+ money - increases score 
+ floor - empty space 
+ g_trl - trail of agent
+ h_trl - trail of 'hunter'
+ mgrub - agent 
+ hunter - an autonomous opponent that must be avoided.

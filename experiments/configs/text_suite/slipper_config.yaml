@@ -1,0 +1,18 @@
+run_at: '2026-08-06T14:24:03-04:00'
+label: slipper
+suite: text
+sizes:
+- 50
+- 100
+- 200
+- 300
+- 400
+- 500
+- 750
+- 1000
+seeds: 1..10
+workers: 12
+slipper_flags: '-R '
+bestj: recomputed per (dataset,size,seed) via slipper-default CV
+datasets:
+- inflation_abstracts

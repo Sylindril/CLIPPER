@@ -1,0 +1,20 @@
+run_at: '2026-09-17T14:14:58-04:00'
+label: slopper_qwen9b_T0
+sizes:
+- 250
+seeds: 1..3
+workers: 12
+slipper_flags: -R openrouter/qwen/qwen3.5-9b -T0
+bestj: recomputed per (dataset,size,seed) via slipper-default CV
+min_bestj: 2
+bestj_from: null
+suite: test
+datasets:
+- college
+- water_potability
+- stroke
+- telco_churn
+- compas
+- heloc
+- adult
+- bank_marketing

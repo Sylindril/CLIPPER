@@ -1,0 +1,11 @@
+run_at: '2026-07-21T13:55:37-04:00'
+label: slopper_notools_M200
+sizes:
+- 300
+seeds: 1..10
+workers: 12
+slipper_flags: -R gemini/gemini-3.1-flash-lite --example-format table --schema-format
+  full --cell-format repr --prompt-variant task_variant_2 -T0 -M200
+bestj: recomputed per (dataset,size,seed) via slipper-default CV
+datasets:
+- german_credit

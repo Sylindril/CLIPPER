@@ -1,0 +1,25 @@
+run_at: '2026-08-27T16:45:40-04:00'
+label: discrete_cover_linear_only
+sizes:
+- 100
+- 200
+- 300
+- 400
+- 800
+seeds: 1..10
+workers: 12
+slipper_flags: -R  --weighting cover --cover-objective linear
+bestj: recomputed per (dataset,size,seed) via slipper-default CV
+min_bestj: 2
+suite: tuning
+datasets:
+- hypothyroid
+- breast_cancer_wisconsin
+- cylinder_bands
+- pima_diabetes
+- titanic
+- abalone
+- german_credit
+- obesity
+- student_por
+- move1

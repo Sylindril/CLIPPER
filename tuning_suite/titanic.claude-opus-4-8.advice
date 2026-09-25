@@ -1,0 +1,35 @@
+# Titanic Survival — Rule-Building Cheat-Sheet
+
+## Most predictive attributes
+
+**Sex** — the dominant signal. "Women and children first" governed lifeboat loading. `female` strongly → *survived*; `male` strongly → *died*. Almost every high-precision rule should either condition on Sex or be understood relative to it.
+
+**Pclass** — proxy for wealth, deck location, and crew guidance to boats. Lower Pclass number = higher class = closer to boat deck = better survival. `1` → survived-leaning, `3` → died-leaning, `2` intermediate.
+
+**Age** — matters mainly for children. Very young → survived (the "children first" rule). Among adults Age is weak on its own; don't expect a clean monotone effect. Elderly males fared especially poorly.
+
+**Fare** — correlated with Pclass (redundant); higher fare → survived-leaning. Because it overlaps Pclass, use it to refine within a class, not as a primary axis.
+
+## Directions / interactions (the core of good rules)
+
+The signal is strongly **interactive**, not additive. Best rules combine Sex × Pclass × Age:
+
+- `Sex==female AND Pclass in {1,2}` → very high-precision *survived* cluster.
+- `Sex==male AND Pclass==3` → high-precision *died* cluster.
+- `Sex==male AND Age` below a small child threshold → *survived* pocket (use the threshold tool). Adding `Pclass in {1,2}` sharpens it.
+- Adult males across all classes lean *died*; class barely rescues them.
+- Females in Pclass 3 are the ambiguous group — survival roughly a coin flip — so don't expect a clean female-only rule; you must split by class.
+
+**Family features.** SibSp (siblings/spouses) and Parch (parents/children) aboard. Consider a derived `FamilySize = SibSp + Parch + 1` and an `IsAlone = (SibSp+Parch==0)` flag. Small families survived better than both solo travelers and large families. Large families (high SibSp+Parch, common in Pclass 3) → *died*-leaning, plausibly because groups couldn't board together. Solo adult males → strong *died* signal. Treat SibSp and Parch as U-shaped, not monotone — let the threshold tool find both a low and high cut, or bin via FamilySize.
+
+## Caveats / pitfalls
+
+- **Missing Age** is frequent and NOT random (more missing in Pclass 3). A rule requiring `Age < t` silently drops all missing-age rows; make your `covers` handle missing Age explicitly (e.g. return False, or route those rows to Sex/Pclass-only rules). Don't let a missing-Age row throw.
+- **Fare ≈ Pclass redundancy**: prefer Pclass (clean, symbolic) as the primary class signal; use Fare only for intra-class refinement. Fare can be 0 (crew/staff) or shared across a ticket group, inflating per-person values — treat extreme Fare cautiously.
+- **Embarked** is weak and mostly a Pclass/port confound (C leans survived only because more 1st-class boarded there). Low priority; use only as a last-resort refinement, not a headline attribute.
+- **Class overlap**: female-Pclass3 and male-child pockets are the genuinely mixed regions. Aim rules AWAY from these unless the tool confirms high precision; boosting rewards precise, well-covered clusters over broad noisy ones.
+- Don't over-split Age for adults — it invites overfitting with little signal.
+
+## Shape of good rules
+
+Favor 2–3 condition conjunctions built from **Sex + Pclass (+ Age-child or FamilySize)**. Symbolic equality on Sex/Pclass plus one thresholded continuous condition tends to yield the cleanest high-precision clusters. Build complementary rules for BOTH classes: one family firing on protected groups (female/high-class/child) → *survived*, another on exposed groups (male/3rd-class/solo) → *died*. Let the threshold tools set every numeric cut on Age, Fare, and FamilySize.

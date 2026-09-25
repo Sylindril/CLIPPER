@@ -1,0 +1,34 @@
+## Predicting pass vs. fail (Portuguese student data)
+
+**Dominant signals — prior grades.** `G1` and `G2` (first/second period grades) are by far the strongest predictors and nearly determine `G3`/pass. Low G1 or G2 → `fail`; high → `pass`. Build your highest-confidence rules on these alone; they will dominate boosting. NOTE: this schema omits G1/G2 from the listed attributes — if they are absent at build time, everything below becomes primary. Assume they're gone unless a tool shows otherwise.
+
+**Without prior grades, the top predictors:**
+- `failures` (past class failures): the single strongest non-grade signal. Any failures > 0 → strongly toward `fail`. A rule `failures >= 1` will be high-precision for fail.
+- `higher` (wants higher education): `no` → toward `fail`; `yes` is common and weakly toward `pass` (low precision alone — don't rely on it).
+- `studytime`: more study → `pass`; low → `fail`.
+- `Medu`/`Fedu` (parental education): higher → `pass`. Mother's education usually stronger. Also `Mjob=teacher`/`health` → `pass`; `at_home` → `fail`.
+- `schoolsup` (extra school support): counterintuitive — `yes` often correlates with `fail`, because support is given to struggling students. Treat as a marker of pre-existing weakness, not a cause of success.
+- `age`: older students (repeaters) → `fail`, especially near the top of the range; interacts with `failures`.
+- `absences`: many absences lean toward `fail`, but the relationship is noisy/non-monotonic (some strong students miss school) — use only combined with other weak signals, find a data-optimal threshold.
+- `goout`, `Dalc`, `Walc` (going out, alcohol): high → `fail`. Combine Dalc+Walc or use Walc; alcohol alone is weak, better as a conjunct.
+
+**Direction summary (toward `fail`):** high `failures`, high `age`, low `studytime`, low `Medu`/`Fedu`, `higher=no`, high `goout`/`Walc`/`Dalc`, `schoolsup=yes`, `internet=no`, `address=R`, `Mjob=at_home`, `romantic=yes` (weak).
+
+**Interactions / derived quantities worth trying:**
+- `failures>=1 AND higher=no` → very high-precision fail cluster.
+- `studytime` low AND `goout` high → fail.
+- `Medu` high AND `studytime` high → pass.
+- Combined alcohol = Dalc+Walc; combined parental education = max(Medu,Fedu).
+- `age` high AND `failures>=1` → repeater, strong fail.
+
+**Rule shape.** Best fail rules: one strong anchor (`failures`, `higher=no`) tightened by one lifestyle/support conjunct. Best pass rules: high `studytime` or high parental education, optionally + `higher=yes`. Keep conjunctions short (2–3 conditions) so coverage stays measurable.
+
+**Pitfalls:**
+- Pass is likely the majority class; a bare pass rule can look accurate but adds little — favor rules that carve out clean fail clusters (the minority) since those drive boosting gains.
+- Many binary demographics (`nursery`, `Pstatus`, `famsize`, `activities`, `paid`, `guardian`, `reason`, `school`, `sex`) are weak/noisy — ignore unless a tool shows real lift; don't build primary rules on them.
+- `paid` and `activities` have little signal; `nursery` almost none.
+- Watch confounds: `schoolsup=yes` and `famsup` mark struggling students, not causes.
+- `absences` and alcohol are non-monotonic — always let the threshold tool pick cutoffs rather than assuming linear.
+- Missing values: parental jobs/education and support flags may be imperfect; don't infer fail from missingness.
+
+Prioritize: `failures` → `higher` → `studytime` → parental education/job → age → lifestyle (goout/alcohol/absences) as conjuncts.

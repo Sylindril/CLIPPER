@@ -1,0 +1,20 @@
+run_at: '2026-09-14T10:27:35-04:00'
+label: slopper
+sizes:
+- 250
+seeds: 1..10
+workers: 12
+slipper_flags: -R gemini/gemini-3.1-flash-lite
+bestj: stored, from bestj_from
+min_bestj: 2
+bestj_from: scripts/test-lc-out/results.csv:slopper
+suite: anon
+datasets:
+- task_b0edd8
+- task_f15d36
+- task_9624e8
+- task_599f85
+- task_1f41c0
+- task_7445cb
+- task_2e85a2
+- task_16e9ac

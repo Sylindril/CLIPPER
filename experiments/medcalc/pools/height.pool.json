@@ -1,0 +1,58 @@
+[
+  {
+    "pattern": "height[^.\\d]{0,20}(\\d{2,3}(?:\\.\\d+)?)[\\s-]*(?:cm|centimet(?:er|re)s?)\\b",
+    "flags": "i",
+    "template": [
+      1,
+      "cm"
+    ]
+  },
+  {
+    "pattern": "(\\d{2,3}(?:\\.\\d+)?)[\\s-]*(?:cm|centimet(?:er|re)s?)[\\s,]*(?:tall|in height|in length)",
+    "flags": "i",
+    "template": [
+      1,
+      "cm"
+    ]
+  },
+  {
+    "pattern": "(\\d{2,3}(?:\\.\\d+)?)[\\s-]*(?:cm|centimet(?:er|re)s?)\\b",
+    "flags": "i",
+    "template": [
+      1,
+      "cm"
+    ]
+  },
+  {
+    "pattern": "height[^.\\d]{0,20}(\\d\\.\\d+)\\s*(?:m|mt|met(?:er|re)s?)\\b",
+    "flags": "i",
+    "template": [
+      1,
+      "m"
+    ]
+  },
+  {
+    "pattern": "\\b([12]\\.\\d{1,2})\\s*(?:m|mt|met(?:er|re)s?)\\b(?!m)",
+    "flags": "i",
+    "template": [
+      1,
+      "m"
+    ]
+  },
+  {
+    "pattern": "(?:height|tall)[^.\\d]{0,20}(\\d{2,3}(?:\\.\\d+)?)\\s*(?:in|inch|inches)\\b",
+    "flags": "i",
+    "template": [
+      1,
+      "in"
+    ]
+  },
+  {
+    "pattern": "(\\d{2,3}(?:\\.\\d+)?)\\s*inches\\b",
+    "flags": "i",
+    "template": [
+      1,
+      "in"
+    ]
+  }
+]

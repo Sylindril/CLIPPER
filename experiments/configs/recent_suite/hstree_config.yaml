@@ -1,0 +1,18 @@
+run_at: '2026-08-20T14:35:36-04:00'
+label: hstree
+model: imodels_hstree
+sizes:
+- 50
+- 100
+- 200
+- 300
+- 400
+- 500
+- 750
+- 1000
+seeds: 1..10
+suite: recent
+timeout: 0.0
+datasets:
+- inflation_abstracts
+bestj: n/a for baselines (written as 0)

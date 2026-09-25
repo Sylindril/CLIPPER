@@ -1,0 +1,20 @@
+run_at: '2026-08-02T11:26:04-04:00'
+label: slopper_notools_M200
+sizes:
+- 250
+- 1200
+seeds: 1..10
+workers: 12
+slipper_flags: -R gemini/gemini-3.1-flash-lite -T0 -M200
+bestj: recomputed per (dataset,size,seed) via slipper-default CV
+min_bestj: 2
+suite: test
+datasets:
+- college
+- water_potability
+- stroke
+- telco_churn
+- compas
+- heloc
+- adult
+- bank_marketing

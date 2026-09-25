@@ -1,0 +1,32 @@
+# Cylinder Banding — Rule-Building Cheat-Sheet
+
+**Domain frame.** Banding is a rotogravure ink-transfer defect. It arises from the ink/press chemistry being out of its stable operating window, plus specific hardware setups. Favor **process numerics** (attrs 21–39) as primary signal; use **nominals** as high-precision context gates.
+
+## Highest-value attributes & directions
+- **viscosity, ink_temperature, solvent_pct, ink_pct, varnish_pct** — the ink-rheology core. Ink too thick/thin or mis-tempered impairs transfer. Bands cluster at the *extremes* (both tails), not a single side, so try upper-tail and lower-tail rules separately. Temperature and viscosity move inversely (warm ink thins) — read them together.
+- **ESA_voltage, ESA_amperage** — electrostatic assist pulls ink from cells. **Low/zero ESA → banding**; this is one of the strongest, cleanest signals. A rule firing on low ESA_voltage is a prime candidate.
+- **humidity** — high humidity destabilizes ink/paper; lean toward banding at high end.
+- **blade_pressure, press_speed** — doctor-blade and speed interact with viscosity. High speed with under-supplied/thick ink → bands. Try speed×viscosity combinations.
+- **roughness, caliper** (paper) — rougher / off-spec caliper stock transfers poorly; higher roughness leans toward band.
+- **proof_cut** — proofing metric; deviation from nominal can flag trouble.
+- **chrome_content, anode_space_ratio, current_density** — cylinder plating quality. Off-nominal plating leans toward band, but these are weaker/sparser; use only as secondary gates.
+
+## Nominal gates (use to sharpen precision, not alone)
+- **paper_type / ink_type** (uncoated vs coated vs super/cover), **solvent_type**, **blade_mfg**, **press_type / press / unit_number**, **plating_tank**, **cylinder_size**. Specific hardware or paper/ink combos have chronic band tendencies — good for high-precision single-class clusters. **customer** can proxy a job's paper/ink recipe but risks overfitting (many rare, near-duplicate spellings like hanoverhouse/hanovrhous, eckerd/eckerds) — prefer it only when a value has real coverage.
+
+## Interactions / derived quantities worth trying
+- **ESA_voltage low AND high press_speed** — assist can't keep up.
+- **viscosity × ink_temperature** (effective viscosity) — combine rather than threshold each alone.
+- **solvent_pct / ink_pct balance** — ink dilution state.
+- **high humidity AND uncoated/rough paper**.
+- A thick-ink cluster: high viscosity + high blade_pressure + high speed.
+
+## Pitfalls
+- **Missing values are pervasive** (~60% of rows). `covers` must handle absent keys — check presence before comparing, or the predicate crashes/misfires. Missingness may itself correlate with logging gaps on troubled runs; a "value present" guard is safer than assuming a default.
+- **Zero-variance / near-constant nominals**: ink_color, cylinder_division are effectively single-valued here — **ignore them** (no discriminative power).
+- **timestamp** and **job/cylinder number**: IDs, not physics. Skip except as coarse era effects; high overfit risk.
+- **Overlapping classes**: many runs sit near the operating boundary — numeric thresholds won't cleanly separate. Expect precision, not recall, from any single rule; let boosting stack them.
+- Numerics are on wildly different scales — rely on the threshold tool per attribute; don't compare raw magnitudes across attributes.
+
+## Rule shape
+Best rules = **one or two process numerics (thresholded) + optionally one nominal gate** for a specific press/paper/ink context. Keep conditions few (2–3) for coverage. Build a portfolio: separate high-tail and low-tail rules for viscosity/temperature/ESA, plus hardware-specific band pockets. Aim each rule at a pure cluster of ONE class; boosting handles the rest.

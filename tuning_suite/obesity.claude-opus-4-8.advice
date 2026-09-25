@@ -1,0 +1,38 @@
+Weight was removed, so no BMI is available — the signal is diffuse and lives in lifestyle/genetic proxies. No single attribute separates the classes cleanly; good rules will AND together 2–3 conditions.
+
+## Most predictive attributes (and direction)
+
+- **family_history_with_overweight** — likely the single strongest predictor. `yes` → **obese**. This captures genetic + shared-environment risk that survives removing weight. Put it in most obese-side rules as an anchor.
+- **FAVC** (frequent high-calorie food) — `yes` → **obese**. Common but low-precision alone; combine.
+- **FAF** (physical activity frequency) — **inverse**: low FAF → **obese**, high FAF → **not_obese**. Strong lever for the not_obese side.
+- **Age** — older → **obese** (roughly monotonic over this young-skewed sample). Very young clusters strongly toward not_obese/insufficient. Use as a supporting condition, not standalone.
+- **CAEC** (eating between meals) — counterintuitive here: `Sometimes` associates with **obese**, while `Frequently`/`Always` skew **not_obese**. Treat as categorical, let the model test each level; don't assume "more snacking = heavier."
+- **SCC** (monitors calories) — `yes` → **not_obese**. Rare but high-precision for the not_obese side.
+- **MTRANS** — `Automobile`/`Motorbike` → **obese**; `Walking`/`Bike` → **not_obese** (activity proxy, correlated with FAF).
+- **CALC** (alcohol) — `Sometimes`/`Frequently` → **obese**; `no` → not_obese-leaning.
+
+Weaker/secondary: **TUE** (more device time → obese, sedentary proxy), **Gender** (mainly useful as an interaction, not alone), **NCP**, **CH2O**, **FCVC**.
+
+## Direction pitfalls (SMOTE artifacts)
+
+77% of rows are synthetic (SMOTE-interpolated), so:
+- **FCVC** and **CH2O** run counterintuitive — obese rows often show *higher* vegetable and water values. Don't assume "healthier intake → not_obese." Let the threshold tool decide direction; be skeptical of these as primary conditions.
+- Continuous attributes (FCVC, NCP, CH2O, FAF, TUE) were survey-encoded to ~1–3 ranges then interpolated, so they take many near-integer values. Optimal thresholds may sit at oddly precise cutoffs — trust the tool, but check that coverage is large enough to be real, not a SMOTE seam.
+- **SMOKE** — near-useless (tiny minority, no clean signal). Ignore.
+
+## Interactions / derived quantities worth trying
+
+- **family_history=yes AND FAVC=yes AND FAF low** → high-precision obese cluster.
+- **FAF low AND MTRANS=Automobile** (or AND high TUE) → reinforced sedentary → obese.
+- **family_history=no AND FAF high** (and/or SCC=yes) → strong not_obese.
+- **Age × FAF**: older with low activity is a sharper obese signal than either alone.
+- **Gender × FCVC/FAF**: relationships may differ by sex; a Gender-gated threshold can beat a global one.
+- Consider a rough **activity score** = high FAF + active MTRANS + low TUE for not_obese rules.
+
+## Rule shape guidance
+
+- **Obese rules:** anchor on `family_history=yes`, then add one lifestyle risk (FAVC=yes, low FAF, Automobile, CALC≠no, or CAEC=Sometimes). Age-older as a tie-breaker.
+- **Not_obese rules:** anchor on `family_history=no` OR high FAF, optionally AND SCC=yes / active transport / young Age.
+- Prefer 2–3 conditions: single-attribute rules will be low-precision because weight is gone. But don't over-conjoin — coverage collapses fast on 2111 rows.
+- Since boosting combines many rules, aim each rule at a *pure pocket* of one class rather than global accuracy. Mine both classes; family_history splits the population well in both directions.
+- Verify every candidate condition's direction and coverage with the tools before committing — several attributes here defy naive intuition.

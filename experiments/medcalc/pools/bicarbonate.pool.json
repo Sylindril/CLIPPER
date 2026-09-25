@@ -1,0 +1,42 @@
+[
+  {
+    "pattern": "\\b(?:bicarbonate|hco3\\s*-?|\\bco2\\b|carbon dioxide|total co2)\\b[^.\\d]{0,8}(\\d{1,2}(?:\\.\\d+)?)\\s*(mEq/L|mmol/L|mg/dL|mM/L|mEq/dL|mmol/dL|mEq/mL)\\b",
+    "flags": "i",
+    "template": [
+      1,
+      2
+    ]
+  },
+  {
+    "pattern": "\\b(?:bicarbonate|hco3\\s*-?|\\bco2\\b|carbon dioxide|total co2)\\b[^.\\d]{0,20}(\\d{1,2}(?:\\.\\d+)?)\\s*(mEq/L|mmol/L|mg/dL|mM/L|mEq/dL|mmol/dL|mEq/mL)\\b",
+    "flags": "i",
+    "template": [
+      1,
+      2
+    ]
+  },
+  {
+    "pattern": "\\A.*\\b(?:bicarbonate|hco3\\s*-?|\\bco2\\b|carbon dioxide|total co2)\\b[^.\\d]{0,8}(\\d{1,2}(?:\\.\\d+)?)\\s*(mEq/L|mmol/L|mg/dL|mM/L|mEq/dL|mmol/dL|mEq/mL)\\b",
+    "flags": "is",
+    "template": [
+      1,
+      2
+    ]
+  },
+  {
+    "pattern": "\\b(?:bicarbonate|hco3\\s*-?|\\bco2\\b|carbon dioxide|total co2)\\b[^.\\d]{0,8}(\\d{1,2}(?:\\.\\d+)?)\\s*(?![\\w/%µ])",
+    "flags": "i",
+    "template": [
+      1,
+      "mEq/L"
+    ]
+  },
+  {
+    "pattern": "\\b(?:bicarbonate|hco3\\s*-?|\\bco2\\b|carbon dioxide|total co2)\\b[^.\\d]{0,8}(\\d{1,2}(?:\\.\\d+)?)\\s*(?![\\w/%µ])",
+    "flags": "i",
+    "template": [
+      1,
+      "mmol/L"
+    ]
+  }
+]

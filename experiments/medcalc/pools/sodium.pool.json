@@ -1,0 +1,43 @@
+[
+  {
+    "comment": "Unit is CAPTURED, not stamped: normalize.canon casefolds strings, so a captured 'mEq/L' folds onto gold 'mEq/L'. The trailing unitless rules stamp a literal unit for notes that print bare numbers ('Sodium 140, Potassium 3.8').",
+    "pattern": "\\b(?:sodium|na\\s*\\+|\\bna\\b|hypernatr\\w*|hyponatr\\w*)\\b[^.\\d]{0,8}(\\d{2,3}(?:\\.\\d+)?)\\s*(mEq/L|mmol/L|mg/dL|mM/L|mEq/dL|mmol/dL|mEq/mL)\\b",
+    "flags": "i",
+    "template": [
+      1,
+      2
+    ]
+  },
+  {
+    "pattern": "\\b(?:sodium|na\\s*\\+|\\bna\\b|hypernatr\\w*|hyponatr\\w*)\\b[^.\\d]{0,20}(\\d{2,3}(?:\\.\\d+)?)\\s*(mEq/L|mmol/L|mg/dL|mM/L|mEq/dL|mmol/dL|mEq/mL)\\b",
+    "flags": "i",
+    "template": [
+      1,
+      2
+    ]
+  },
+  {
+    "pattern": "\\A.*\\b(?:sodium|na\\s*\\+|\\bna\\b|hypernatr\\w*|hyponatr\\w*)\\b[^.\\d]{0,8}(\\d{2,3}(?:\\.\\d+)?)\\s*(mEq/L|mmol/L|mg/dL|mM/L|mEq/dL|mmol/dL|mEq/mL)\\b",
+    "flags": "is",
+    "template": [
+      1,
+      2
+    ]
+  },
+  {
+    "pattern": "\\b(?:sodium|na\\s*\\+|\\bna\\b|hypernatr\\w*|hyponatr\\w*)\\b[^.\\d]{0,8}(\\d{2,3}(?:\\.\\d+)?)\\s*(?![\\w/%µ])",
+    "flags": "i",
+    "template": [
+      1,
+      "mEq/L"
+    ]
+  },
+  {
+    "pattern": "\\b(?:sodium|na\\s*\\+|\\bna\\b|hypernatr\\w*|hyponatr\\w*)\\b[^.\\d]{0,8}(\\d{2,3}(?:\\.\\d+)?)\\s*(?![\\w/%µ])",
+    "flags": "i",
+    "template": [
+      1,
+      "mmol/L"
+    ]
+  }
+]

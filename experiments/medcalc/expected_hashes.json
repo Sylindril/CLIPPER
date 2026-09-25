@@ -1,0 +1,75 @@
+{
+ "_note": "sha256 of the MedCalc rows and prepared input bundles used in the paper. `run_medcalc_repeats.py prepare` checks its output against these.",
+ "row_content": {
+  "1/tokens": {
+   "train": "92990e7f45805d8d1a87c67c832a2badef930b8366715574b23bf156df4653b2",
+   "dev_test": "8dbcbb6db786b63d3e50afdca9b80ddd77f23b27f699c251f447e54688810454",
+   "final_test": "c05c77cf5506938afc15479ff32aa27ecfd7e4b273636fb78661449c7b797351"
+  },
+  "1/raw": {
+   "train": "99eba2ff7721f95d09cecf9014cb6714751dd340b32fa243dcdd3953d244d980",
+   "dev_test": "7ceffa3581dd82cdd8dc14c46157d843820041eac37fe7b0dc6eca2686011c90",
+   "final_test": "f41b521e18629d0dfd94f36d9db64e5cc3f68125551cbe44da0dd147b191f770"
+  },
+  "4/tokens": {
+   "train": "b148c09bc50ad13da9e0c52df3726669bcef07b0d7ff88d87dbf35baf673cca1",
+   "dev_test": "17593e5c568fdbd6c29ddba3424acd7c01740be4e437aec3675a55674a6dea0e",
+   "final_test": "9f16361796c1915dba152d0c9677b39b709c6989737829581b7cabaa161e28fe"
+  },
+  "4/raw": {
+   "train": "ca359f2a935db34eda88e7f2f21f60bd72b491a7be70115f9f3588b5aa9dfe84",
+   "dev_test": "7ceffa3581dd82cdd8dc14c46157d843820041eac37fe7b0dc6eca2686011c90",
+   "final_test": "f41b521e18629d0dfd94f36d9db64e5cc3f68125551cbe44da0dd147b191f770"
+  },
+  "16/tokens": {
+   "train": "5ba7dee6b056012ce71b965b74d56e651be697dc673304be4984bb35e5f97fe4",
+   "dev_test": "ae34d0d460648895d4e5216110f71e8b00865aa7d38237cd4f8639819008a9b1",
+   "final_test": "9a370053df8e3f5a88a8297408d7ae70f20ac2daaf8b3aae3f276bd7f34c988b"
+  },
+  "16/raw": {
+   "train": "f25723f8a7366805c88e28a8bbefa85d815416a75ac3f42a40dc13a0b3f080d0",
+   "dev_test": "7ceffa3581dd82cdd8dc14c46157d843820041eac37fe7b0dc6eca2686011c90",
+   "final_test": "f41b521e18629d0dfd94f36d9db64e5cc3f68125551cbe44da0dd147b191f770"
+  },
+  "64/tokens": {
+   "train": "f66573154458a8a919cfdd1fd327fbfb6acfc87531ee5a99065970f551b66141",
+   "dev_test": "aee49d893248398c5cbb462f3a294891eb8af41edbeb8c5e0e2f8b8330d31d9f",
+   "final_test": "7ffa0f964ebd4a7065b5ec7e7c1b61f57a49694f2ac1866b29b36d3ded60775c"
+  },
+  "64/raw": {
+   "train": "999bd9bd48dc5ba8b69754b72c0698de4436139a25191bbba0e65254c9e0b4d7",
+   "dev_test": "7ceffa3581dd82cdd8dc14c46157d843820041eac37fe7b0dc6eca2686011c90",
+   "final_test": "f41b521e18629d0dfd94f36d9db64e5cc3f68125551cbe44da0dd147b191f770"
+  }
+ },
+ "input_files": {
+  "inputs/classification_cap1_tokens.json": "c23e16cb372a31cc5c7bd9cdddb47ee15f6ddfc1c6b04d42c9d4d2e118fad990",
+  "inputs/classification_cap1_raw.json": "90f66b80ce21ddcd7d060c10b7644ed6e5abbac2613987124942451332a65d82",
+  "inputs/classification_cap4_tokens.json": "c5dd018a8508b6c9a73021a935a1109cb4f01bfe2a4771fcd1119022bf91b2d1",
+  "inputs/classification_cap4_raw.json": "f89fdbe611041637f2f9989426503a7db49eb19875f4e7b5dce95a56c7ad80ad",
+  "inputs/classification_cap16_tokens.json": "b6daa62042098b50fd2a6461057312958fdd15066a5f3b6b1c932824d25e0a24",
+  "inputs/classification_cap16_raw.json": "d56e3cc89c567af0a97613a705787f49d5362a796d603ef9e83844c9400d98f5",
+  "inputs/classification_cap64_tokens.json": "a917b782c7d1449445d7eae264a494e2a302b16090c00f2082209965e0343a60",
+  "inputs/classification_cap64_raw.json": "3847ffaf08f64e45d7fed816acf415df769cf43ecda9d1844fad894388c81d90",
+  "inputs/extraction_sodium.json": "33185433a2625fe337cd62b6471892f49bb7f79ab19237dc6be1a0cde9eab85d",
+  "inputs/pools/sodium.pool.json": "ea33075ad2c353b1c5ec749c7b912ae75cb3dfea221d9ada8de8c3de2a74c346",
+  "inputs/extraction_weight.json": "e7e7a0ab4fc9a07cffa8369181267b84db0eb15b0228d586a72f571bba42401c",
+  "inputs/pools/weight.pool.json": "26115809045367dcd44146b4e4bc2130a8ff60f8c5a58dd565a3559d767065d3",
+  "inputs/extraction_height.json": "cd9e655a10c0d107a483d478186b70273c0cb0d2f674d2665f1ffa3105387792",
+  "inputs/pools/height.pool.json": "717ace6ffb0d21e155d31d8928058f59e013d06c04e02e00ca4ea0d8ac3f3eee",
+  "inputs/extraction_sex.json": "0f76b7a45178bc0ecab7ca4f71f1b55877c3ab20e226a35951701cf28ac42782",
+  "inputs/pools/sex.pool.json": "4151d6cd87fa999c0d96170601af874e2f40217f0d66a3b663c9a86cc162c546",
+  "inputs/extraction_bicarbonate.json": "02a84b35aa525d4b2e508f6dff7771bb9708af3fcf5b09222753f263e6bb8977",
+  "inputs/pools/bicarbonate.pool.json": "9a2915acba6dab1b42d1354022ec7bb79bbfcc6416998bab616d78969135dc3b",
+  "inputs/extraction_chloride.json": "9751fc89a6fe51bedab4ead0dd25643984286bb3e36d0546eb04d202ad774573",
+  "inputs/pools/chloride.pool.json": "2cf4c7dbf974c6ab2ba2b07e17600bea72a1cf45226c53858e741e1dd6cd5146",
+  "inputs/extraction_age.json": "3177caa863e56cc371b70c9ecd33338e211ecee584f319ec91e4dbcba78f27ec",
+  "inputs/pools/age.pool.json": "02969c5fa60a5d26cb3edf8b8275167e3f936bd4b84679e60ee1da3447063111",
+  "inputs/extraction_glucose.json": "ac8e023e642d5d60332ba60a0feaf203730b054a192b9bbab02bac827c580422",
+  "inputs/pools/glucose.pool.json": "821f62e04d52ab754ce34f46184b0773da7be98db267db81236bd548ad6c9d05",
+  "inputs/extraction_heart_rate_or_pulse.json": "9db7e317ce9747b5f5c26eaade412eebe43244271f3179aa7ae8847b63e3d412",
+  "inputs/pools/heart_rate_or_pulse.pool.json": "9652ba71a7603a1404de41fed84cde7ed39c3dd8fcbfdbda79c8bf3e86fe9edb",
+  "inputs/extraction_qt_interval.json": "0fcc9ffae3138943577cd9b071834cfd383d809444d13ca91cfcdb3d84227294",
+  "inputs/pools/qt_interval.pool.json": "e32bfcda0a6b093d47568a8d8c27b0f65253f5c8ad0d64dad4dcedc881f1e046"
+ }
+}

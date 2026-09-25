@@ -1,0 +1,44 @@
+[
+  {
+    "pattern": "\\b(?:fe-?male|woman|girl|lady|women)\\b",
+    "flags": "i",
+    "template": [
+      "Female"
+    ]
+  },
+  {
+    "pattern": "\\b(?:male|man|boy|gentleman|men)\\b",
+    "flags": "i",
+    "template": [
+      "Male"
+    ]
+  },
+  {
+    "pattern": "year[s]?[- ]old\\s+(?:[a-z-]+\\s+){0,3}?(?:fe-?male|woman|girl|lady)\\b",
+    "flags": "i",
+    "template": [
+      "Female"
+    ]
+  },
+  {
+    "pattern": "year[s]?[- ]old\\s+(?:[a-z-]+\\s+){0,3}?(?:male|man|boy|gentleman)\\b",
+    "flags": "i",
+    "template": [
+      "Male"
+    ]
+  },
+  {
+    "pattern": "\\b(?:she|her|herself|Ms\\.|Mrs\\.)\\b",
+    "flags": "i",
+    "template": [
+      "Female"
+    ]
+  },
+  {
+    "pattern": "\\b(?:he|his|him|himself|Mr\\.)\\b",
+    "flags": "i",
+    "template": [
+      "Male"
+    ]
+  }
+]

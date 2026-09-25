@@ -1,0 +1,23 @@
+run_at: '2026-07-27T14:39:06-04:00'
+label: candcond_notools_M200
+sizes:
+- 100
+- 200
+- 300
+- 400
+- 600
+seeds: 1..10
+workers: 12
+slipper_flags: -R gemini/gemini-3.1-flash-lite -M200 -T0 --candidate-conditions
+bestj: recomputed per (dataset,size,seed) via slipper-default CV
+datasets:
+- hypothyroid
+- breast_cancer_wisconsin
+- cylinder_bands
+- pima_diabetes
+- titanic
+- abalone
+- german_credit
+- obesity
+- student_por
+- move1

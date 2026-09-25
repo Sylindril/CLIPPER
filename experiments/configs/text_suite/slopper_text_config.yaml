@@ -1,0 +1,21 @@
+run_at: '2026-08-05T15:11:37-04:00'
+label: slopper_text
+suite: text
+sizes:
+- 50
+- 100
+- 200
+- 300
+- 400
+- 500
+- 750
+- 1000
+seeds: 1..10
+workers: 12
+# Run before the tuned configuration became the -R default; the explicit flags
+# below reproduce that run's prompt on the current code (no coverage tools,
+# dict-format sample, baseline prompt).
+slipper_flags: -R gemini/gemini-3.1-flash-lite --schema-format compressed --use-text --example-format dict --prompt-variant baseline -T0 --no-lambda-body-tool --tools-prompt baseline
+bestj: recomputed per (dataset,size,seed) via slipper-default CV
+datasets:
+- sms_spam

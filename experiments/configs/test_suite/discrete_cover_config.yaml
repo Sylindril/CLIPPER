@@ -1,0 +1,23 @@
+run_at: '2026-07-31T14:51:20-04:00'
+label: discrete_cover
+sizes:
+- 100
+- 250
+- 600
+- 1200
+- 2000
+seeds: 1..10
+workers: 12
+slipper_flags: -R  --weighting cover
+bestj: recomputed per (dataset,size,seed) via slipper-default CV
+min_bestj: 2
+suite: test
+datasets:
+- college
+- water_potability
+- stroke
+- telco_churn
+- compas
+- heloc
+- adult
+- bank_marketing

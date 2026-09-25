@@ -1,0 +1,39 @@
+# Thyroid Classifier Cheat-Sheet: hypothyroid vs negative
+
+**Core biology.** Hypothyroidism = underactive thyroid → pituitary compensates by raising **TSH**, while thyroid hormones (**T3, TT4, FTI**) fall. This drives everything.
+
+**Most predictive attributes (rank order):**
+- **TSH** — the single strongest signal. Hypothyroid → **high TSH**. Rules keying on elevated TSH will be high-precision.
+- **FTI** (Free Thyroxine Index) and **TT4** — hypothyroid → **low** values. FTI ≈ TT4/T4U, so it corrects for binding-protein artifacts; often cleaner than TT4 alone.
+- **T3** — hypothyroid → **low**, but T3 is less sensitive (falls late); weaker than TSH/FTI.
+- **T4U** — binding-protein proxy; not directly diagnostic but needed to interpret TT4 (see interactions).
+
+**Direction summary:** high TSH + low TT4/FTI/T3 → hypothyroid. The classic high-precision cluster is **TSH high AND FTI (or TT4) low simultaneously** — combine them in one rule rather than relying on either alone. TSH-high with normal FTI suggests *compensated* hypothyroid; still positive.
+
+**Measured flags are critical — don't ignore them.**
+- The `*_measured` = `n` cases mean the continuous value is missing/`?`. A rule reading `TSH` is meaningless when `TSH_measured=n`. **Guard every continuous condition with its `_measured=y` flag**, e.g. `TSH_measured=='y' and TSH > θ`.
+- Missingness is informative but also a trap: clinicians order TSH/FTI precisely when they suspect disease. Don't let "was measured" alone stand in for "is positive."
+- **TBG is almost always unmeasured** — effectively useless; ignore TBG and TBG_measured.
+
+**Useful derived quantities / interactions:**
+- **TT4 / T4U** (≈ FTI): if FTI is missing but TT4 and T4U present, this recovers the binding-corrected estimate.
+- **TSH-high ∧ FTI-low** conjunction (above) — the anchor rule.
+- Low TT4 with **normal-to-high T4U** = binding effect, NOT true hypothyroid — a false-positive trap. FTI/TSH disambiguate.
+
+**Context attributes (secondary, use as rule refinements not anchors):**
+- **on_thyroxine / query_hypothyroid**: patients on thyroxine replacement or flagged query-hypothyroid enrich for thyroid disease, but treated patients may test normal — mixed signal. `thyroid_surgery`, `I131`, `lithium`, `tumor`, `goitre` are hypothyroid risk factors but rare; low coverage.
+- **query_hyperthyroid, on_antithyroid_medication** point the *opposite* way (hyper, not hypo) — weak negative indicators.
+- **age, sex**: hypothyroid rises with age and is commoner in females — very weak priors; use only to refine an already-strong lab rule, never as an anchor.
+- **pregnant, sick, psych**: mostly noise for this class; `sick`/non-thyroidal illness can distort labs (sick-euthyroid) → false signals.
+
+**Pitfalls:**
+- Overlap: compensated hypothyroid (high TSH, normal FTI) vs euthyroid is genuinely fuzzy — expect lower precision there; let boosting handle the margin.
+- Don't chase `referral_source` or binary risk-factor flags as standalone predictors — they leak sampling artifacts, not biology.
+- Continuous labs are skewed (long high tail on TSH); the threshold tool will find good cutpoints — trust it over guessed numbers.
+
+**Shape of good rules:**
+1. **Anchor:** `TSH_measured=='y' and TSH > θ` (high-precision positive).
+2. **Refined:** `TSH high AND FTI (or TT4) low` — tighter, catches classic cases.
+3. **Compensated variant:** high TSH with FTI not-low.
+4. Optionally AND a context flag (on_thyroxine / query_hypothyroid) to lift precision on a borderline lab rule.
+Keep each rule to 1–3 conditions; always pair a lab threshold with its `_measured=y` guard.

@@ -1,0 +1,37 @@
+# German Credit — Rule-Building Cheat-Sheet
+
+**Goal skew:** Misclassifying a BAD customer as good costs 5×. Favor rules that carve out high-precision BAD clusters; be conservative before letting anything read as "good." A few crisp BAD rules matter more than broad good ones.
+
+**Most predictive attributes (why):**
+- `checking_account_status` — strongest single signal. `no_checking` → strongly GOOD (proxy for wealth/no overdraft need); `checking_lt_0DM` (negative balance) → BAD; low positive balances lean BAD.
+- `credit_history` — `critical_or_other_credits` and `past_payment_delay` → BAD; `all_paid`/`no_credits` counterintuitively lean BAD-ish (thin history), while `paid_duly_till_now` is middling. Use tools; don't assume "clean = good."
+- `duration_months` — longer → BAD (more exposure). Interacts strongly with amount.
+- `credit_amount` — larger → BAD, but correlated with duration; the ratio matters more than either alone.
+- `savings_account` — higher savings → GOOD; `savings_lt_100DM` and unknown/none lean BAD.
+- `employment_since` — longer tenure → GOOD; `unemployed`/`<1yr` → BAD.
+- `property` — `real_estate` → GOOD; `property_unknown_none` → BAD.
+- `age_years` — younger → BAD (less stability); older leans GOOD.
+- `purpose` — `car_new`, `education`, `business` riskier; `car_used`, `radio_tv` safer.
+- `installment_rate_pct` — higher share of income → BAD.
+
+**Derived quantities worth trying:**
+- **monthly burden** = `credit_amount / duration_months` — high burden → BAD.
+- **amount per installment-rate** or amount×rate — captures repayment strain.
+- Long `duration` **AND** large `amount` **AND** poor `checking`/`savings` → tight BAD cluster.
+
+**Good rule shapes:**
+- BAD rules: combine a weak-liquidity categorical (`checking_lt_0DM` or low/unknown savings) with an adverse continuous (long duration OR large amount OR high installment rate). 2–3 conditions gives precision.
+- GOOD rules: anchor on `no_checking` or strong savings/`real_estate`, optionally + short duration + stable employment.
+- Add `credit_history in {critical, past_delay}` to sharpen BAD clusters.
+
+**Caveats & pitfalls:**
+- Classes overlap heavily; single-attribute splits are weak. Almost every reliable rule needs 2+ conditions.
+- `no_checking` is a trap if read naively as "no account = risky" — it's the opposite here.
+- Clean credit history can mask thin-file BAD cases; let coverage tools decide direction rather than intuition.
+- **Low-signal / near-ignorable:** `num_dependents`, `residence_since`, `existing_credits_count`, `job`, `telephone` (mostly a wealth proxy, redundant), `other_debtors` (rare guarantor cases). Use only as tie-breakers inside larger rules, not as rule anchors.
+- `foreign_worker` is highly imbalanced — a value can look predictive purely from scarcity; verify coverage before trusting.
+- `personal_status_sex` is weak and ethically fraught; avoid as a primary anchor.
+- No true missing values, but "unknown/none" categories (savings, property, checking) are informative *categories*, not gaps — treat them explicitly.
+- Continuous attrs (duration, amount, age) are skewed; trust the threshold tool over guessed cutpoints, and prefer thresholds that yield high-precision BAD coverage given the cost asymmetry.
+
+**Direction summary (→ BAD):** negative/low checking, low/unknown savings, long duration, large amount, high installment rate, short employment, young age, unknown property, adverse credit history.

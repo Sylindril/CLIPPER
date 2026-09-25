@@ -1,0 +1,22 @@
+run_at: '2026-07-30T15:52:30-04:00'
+label: boosted_rules
+model: imodels_boosted_rules
+sizes:
+- 100
+- 250
+- 600
+- 1200
+- 2000
+seeds: 1..10
+suite: test
+timeout: 600.0
+datasets:
+- college
+- water_potability
+- stroke
+- telco_churn
+- compas
+- heloc
+- adult
+- bank_marketing
+bestj: n/a for baselines (written as 0)

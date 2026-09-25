@@ -1,0 +1,34 @@
+[
+  {
+    "pattern": "\\b(?:qt(?:c)? interval|\\bqt\\b|\\bqtc\\b)\\b[^.\\d]{0,8}(\\d+(?:\\.\\d+)?)\\s*(msec|ms|milliseconds?)\\b",
+    "flags": "i",
+    "template": [
+      1,
+      2
+    ]
+  },
+  {
+    "pattern": "\\b(?:qt(?:c)? interval|\\bqt\\b|\\bqtc\\b)\\b[^.\\d]{0,20}(\\d+(?:\\.\\d+)?)\\s*(msec|ms|milliseconds?)\\b",
+    "flags": "i",
+    "template": [
+      1,
+      2
+    ]
+  },
+  {
+    "pattern": "\\A.*\\b(?:qt(?:c)? interval|\\bqt\\b|\\bqtc\\b)\\b[^.\\d]{0,8}(\\d+(?:\\.\\d+)?)\\s*(msec|ms|milliseconds?)\\b",
+    "flags": "is",
+    "template": [
+      1,
+      2
+    ]
+  },
+  {
+    "pattern": "\\b(?:qt(?:c)? interval|\\bqt\\b|\\bqtc\\b)\\b[^.\\d]{0,8}(\\d+(?:\\.\\d+)?)\\s*(?![\\w/%µ])",
+    "flags": "i",
+    "template": [
+      1,
+      "msec"
+    ]
+  }
+]

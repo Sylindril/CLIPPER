@@ -1,0 +1,27 @@
+run_at: '2026-08-27T16:32:13-04:00'
+label: discrete_cover_fix12_linear
+sizes:
+- 100
+- 200
+- 300
+- 400
+- 800
+seeds: 1..10
+workers: 12
+# Gate-aware sizing was on by default when this ran; it is now opt-in, so the
+# flags below state it explicitly (verified to reproduce the saved cells).
+slipper_flags: -R '' --weighting cover --cover-sizing gate --cover-objective linear
+bestj: recomputed per (dataset,size,seed) via slipper-default CV
+min_bestj: 2
+suite: tuning
+datasets:
+- hypothyroid
+- breast_cancer_wisconsin
+- cylinder_bands
+- pima_diabetes
+- titanic
+- abalone
+- german_credit
+- obesity
+- student_por
+- move1

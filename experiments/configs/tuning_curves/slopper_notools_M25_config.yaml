@@ -1,0 +1,23 @@
+run_at: '2026-07-22T11:04:51-04:00'
+label: slopper_notools_M25
+sizes:
+- 100
+- 200
+- 300
+- 400
+seeds: 1..10
+workers: 12
+slipper_flags: -R gemini/gemini-3.1-flash-lite --example-format table --schema-format
+  full --cell-format repr --prompt-variant task_variant_2 -T0 -M25
+bestj: recomputed per (dataset,size,seed) via slipper-default CV
+datasets:
+- hypothyroid
+- breast_cancer_wisconsin
+- cylinder_bands
+- pima_diabetes
+- titanic
+- abalone
+- german_credit
+- obesity
+- student_por
+- move1

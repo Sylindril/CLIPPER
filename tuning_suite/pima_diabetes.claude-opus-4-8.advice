@@ -1,0 +1,32 @@
+# Diabetes Classification Cheat-Sheet (Pima)
+
+## Missing-value gotcha (READ FIRST)
+Zeros in `glucose`, `blood_pressure`, `skin_thickness`, `insulin`, and `bmi` are **not real measurements — they encode missing data**. A zero blood pressure or BMI is biologically impossible. Do NOT let a rule fire "diabetic when glucose is low" on these zeros. Guard threshold rules with a lower bound (e.g. `glucose > 0 and glucose >= T`) so "low" clusters aren't contaminated by missing codes. `pregnancies == 0` and `diabetes_pedigree_function`/`age` are genuine, never missing.
+
+## Attribute predictive power & direction
+- **glucose** — dominant signal. This is a glucose-tolerance test value; elevated plasma glucose *is* the diagnostic basis. Higher glucose → **diabetic**. Expect your single best high-precision rules to key on high glucose.
+- **bmi** — strong. Higher BMI → diabetic (obesity drives type-2 risk). Very low nonzero BMI leans nondiabetic.
+- **age** — higher age → diabetic; risk rises with age. Young patients skew nondiabetic.
+- **pregnancies** — more pregnancies → diabetic (correlated with age and gestational history). Weak alone; useful combined.
+- **diabetes_pedigree_function** — genetic/family-history score; higher → diabetic. Noisy but adds lift.
+- **insulin** — messy: many missing zeros, wide skew. When present, both very high (resistance) and abnormal values associate with diabetic, but relationship is nonmonotone. Use cautiously, only with the `>0` guard.
+- **skin_thickness** — a proxy for body fat, correlated with BMI; weak standalone, heavily missing. Prefer BMI instead.
+- **blood_pressure** — weak predictor; mild positive association at best. Don't build primary rules on it.
+
+## Interactions & derived quantities worth trying
+- **glucose × bmi**: high glucose AND high BMI → very high-precision diabetic cluster. This is your strongest compound rule.
+- **glucose × age** or **glucose × pregnancies**: high glucose in older/multiparous patients sharpens precision.
+- **bmi × age**: obese + older → diabetic.
+- For a **nondiabetic** rule: normal glucose (above the missing-zero floor) AND low BMI AND young age → clean high-precision negative cluster.
+- Consider `pregnancies / age`-style ratios only if simpler rules stall; usually not needed.
+
+## Shape of good rules
+- Best diabetic rules: **`glucose` high** as the anchor, optionally tightened with one of `bmi`/`age`/`pedigree`. Two-to-three conditions max — precision comes from glucose, coverage from loosening the partner.
+- Best nondiabetic rules: **`glucose` moderate-to-low (but >0)** anchored, plus low `bmi`/young `age`.
+- Keep rules to 2–3 conditions; boosting combines many narrow rules, so favor high precision over coverage per rule.
+- Let the threshold tool pick cutoffs, but always pair a "low X" condition with a `X > 0` guard on the five missing-coded attributes.
+
+## Pitfalls
+- Classes overlap in the mid-glucose range — don't chase precision there; carve rules from the extremes.
+- Don't trust `insulin`/`skin_thickness` for standalone rules (missingness + noise); prefer `glucose`/`bmi`/`age`.
+- `blood_pressure` is near-useless as an anchor — skip it.

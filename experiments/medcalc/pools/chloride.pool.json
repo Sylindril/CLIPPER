@@ -1,0 +1,42 @@
+[
+  {
+    "pattern": "\\b(?:chloride|cl\\s*-|\\bcl\\b|hyperchlor\\w*|hypochlor\\w*)\\b[^.\\d]{0,8}(\\d{2,3}(?:\\.\\d+)?)\\s*(mEq/L|mmol/L|mg/dL|mM/L|mEq/dL|mmol/dL|mEq/mL)\\b",
+    "flags": "i",
+    "template": [
+      1,
+      2
+    ]
+  },
+  {
+    "pattern": "\\b(?:chloride|cl\\s*-|\\bcl\\b|hyperchlor\\w*|hypochlor\\w*)\\b[^.\\d]{0,20}(\\d{2,3}(?:\\.\\d+)?)\\s*(mEq/L|mmol/L|mg/dL|mM/L|mEq/dL|mmol/dL|mEq/mL)\\b",
+    "flags": "i",
+    "template": [
+      1,
+      2
+    ]
+  },
+  {
+    "pattern": "\\A.*\\b(?:chloride|cl\\s*-|\\bcl\\b|hyperchlor\\w*|hypochlor\\w*)\\b[^.\\d]{0,8}(\\d{2,3}(?:\\.\\d+)?)\\s*(mEq/L|mmol/L|mg/dL|mM/L|mEq/dL|mmol/dL|mEq/mL)\\b",
+    "flags": "is",
+    "template": [
+      1,
+      2
+    ]
+  },
+  {
+    "pattern": "\\b(?:chloride|cl\\s*-|\\bcl\\b|hyperchlor\\w*|hypochlor\\w*)\\b[^.\\d]{0,8}(\\d{2,3}(?:\\.\\d+)?)\\s*(?![\\w/%µ])",
+    "flags": "i",
+    "template": [
+      1,
+      "mEq/L"
+    ]
+  },
+  {
+    "pattern": "\\b(?:chloride|cl\\s*-|\\bcl\\b|hyperchlor\\w*|hypochlor\\w*)\\b[^.\\d]{0,8}(\\d{2,3}(?:\\.\\d+)?)\\s*(?![\\w/%µ])",
+    "flags": "i",
+    "template": [
+      1,
+      "mmol/L"
+    ]
+  }
+]

@@ -1,0 +1,26 @@
+run_at: '2026-07-20T20:31:22-04:00'
+label: slipper
+sizes:
+- 100
+- 200
+- 300
+- 400
+- 600
+- 800
+- 1200
+- 2000
+seeds: 1..10
+workers: 12
+slipper_flags: '-R '
+bestj: recomputed per (dataset,size,seed) via slipper-default CV
+datasets:
+- hypothyroid
+- breast_cancer_wisconsin
+- cylinder_bands
+- pima_diabetes
+- titanic
+- abalone
+- german_credit
+- obesity
+- student_por
+- move1

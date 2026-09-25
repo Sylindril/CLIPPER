@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "slipper"
+version = "0.1.0"
+description = "CLIPPER: LLM rule proposals inside a SLIPPER-style boosted rule learner."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "litellm>=1.55",
+    "numpy>=1.24",
+    "pydantic-ai>=0.0.20",
+    "smolagents>=1.0",
+    "pydantic-ai-litellm",
+    "tqdm>=4.66",
+]
+
+[project.scripts]
+slipper = "slipper.cli:console_main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/slipper"]
+
+[tool.uv.sources]
+pydantic-ai-litellm = { git = "https://github.com/mochow13/pydantic-ai-litellm" }
+corels = [
+    { path = "vendor/corels-1.1.29-cp311-cp311-macosx_10_9_universal2.whl", marker = "sys_platform == 'darwin'" },
+    { path = "vendor/corels-1.1.29-cp311-cp311-win_amd64.whl", marker = "sys_platform == 'win32'" },
+]
+
+[dependency-groups]
+dev = [
+    "matplotlib>=3.8",
+    "pytest>=8",
+    "scipy>=1.11",
+]
+# Baselines from https://github.com/csinva/imodels for the results tables
+# (pulls in scikit-learn / pandas). Install with `uv sync --group baselines`.
+# corels is the certifiably-optimal rule-list baseline. Upstream pycorels 1.1.29
+# won't build on modern Python (stale Cython-generated .cpp + numpy setup hack),
+# so we vendor a locally-patched, GMP-linked wheel under vendor/ (see
+# vendor/README.md for the rebuild recipe). Needs Homebrew gmp at runtime.
+# Vendored corels wheels exist for macOS/arm64 and Windows/amd64 (both cp311;
+# see vendor/README.md for both rebuild recipes) -- on other platforms the
+# group installs without it and imodels_baselines skips the imodels_corels
+# model (guarded import).
+baselines = [
+    "imodels>=1.4",
+    # wittgenstein: RIPPER / IREP*, the closest maintained reimplementation of
+    # the RIPPER algorithm (Cohen, 1995) this repo implements.
+    "wittgenstein>=0.3.5",
+    "scikit-learn>=1.3",
+    "pandas>=2.0",
+    "corels>=1.1 ; (sys_platform == 'darwin' or sys_platform == 'win32') and python_version == '3.11'",
+]
+# HuggingFace `datasets`, needed only to download MedCalc-Bench-Verified in
+# src/tools/build_medcalc_suite.py. Kept out of the core deps (it drags in
+# pyarrow/pandas). Install with `uv sync --group medcalc`.
+medcalc = ["datasets>=3.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

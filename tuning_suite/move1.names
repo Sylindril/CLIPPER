@@ -1,0 +1,11 @@
+expert,random.
+NW: stone,snare,money,floor,g_trl,h_trl,mgrub,huntr.
+N: stone,snare,money,floor,g_trl,h_trl,mgrub,huntr.
+NE: stone,snare,money,floor,g_trl,h_trl,mgrub,huntr.
+W: stone,snare,money,floor,g_trl,h_trl,mgrub,huntr.
+HERE: stone,snare,money,floor,g_trl,h_trl,mgrub,huntr.
+E: stone,snare,money,floor,g_trl,h_trl,mgrub,huntr.
+SW: stone,snare,money,floor,g_trl,h_trl,mgrub,huntr.
+S: stone,snare,money,floor,g_trl,h_trl,mgrub,huntr.
+SE: stone,snare,money,floor,g_trl,h_trl,mgrub,huntr.
+DIR: n,s,e,w.

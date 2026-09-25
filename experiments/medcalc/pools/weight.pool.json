@@ -1,0 +1,42 @@
+[
+  {
+    "pattern": "weigh(?:ed|s|ing|t)?[^.\\d]{0,20}(\\d+(?:\\.\\d+)?)[\\s-]*(?:kg|kilogram(?:s)?|kilos)\\b(?!\\s*/)",
+    "flags": "i",
+    "template": [
+      1,
+      "kg"
+    ]
+  },
+  {
+    "pattern": "(\\d+(?:\\.\\d+)?)[\\s-]*(?:kg|kilogram(?:s)?|kilos)\\b(?!\\s*/)",
+    "flags": "i",
+    "template": [
+      1,
+      "kg"
+    ]
+  },
+  {
+    "pattern": "(\\d{2,3}(?:\\.\\d+)?)[\\s-]*(?:kg|kilogram(?:s)?)\\b(?!\\s*/)",
+    "flags": "i",
+    "template": [
+      1,
+      "kg"
+    ]
+  },
+  {
+    "pattern": "weigh(?:ed|s|ing|t)?[^.\\d]{0,20}(\\d+(?:\\.\\d+)?)\\s*(?:lbs|lb|pounds)\\b",
+    "flags": "i",
+    "template": [
+      1,
+      "lbs"
+    ]
+  },
+  {
+    "pattern": "\\A.{0,150}?(\\d{3,5})[\\s-]*(?:g|gram|grams|gm)\\b(?![/\\w])",
+    "flags": "is",
+    "template": [
+      1,
+      "g"
+    ]
+  }
+]

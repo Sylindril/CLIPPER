@@ -1,0 +1,19 @@
+run_at: '2026-07-21T11:48:40-04:00'
+label: figs
+model: imodels_figs
+sizes:
+- 300
+seeds: 1..10
+timeout: 180
+datasets:
+- hypothyroid
+- breast_cancer_wisconsin
+- cylinder_bands
+- pima_diabetes
+- titanic
+- abalone
+- german_credit
+- obesity
+- student_por
+- move1
+bestj: n/a for baselines (written as 0)

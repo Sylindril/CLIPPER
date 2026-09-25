@@ -1,0 +1,34 @@
+run_at: '2026-07-28T11:20:18-04:00'
+label: candcond_tool_T2
+seeds: 1..10
+workers: 12
+budget: bestj (-i0 -n<bestj> per dataset)
+slipper_flags: -R gemini/gemini-3.1-flash-lite --example-format table --schema-format
+  full --cell-format repr --prompt-variant task_variant_2 --tools-prompt variant1
+  -T2 --no-lambda-body-tool --candidate-conditions --candidate-conditions-tool
+command: uv run slipper --seed <S> -R gemini/gemini-3.1-flash-lite --example-format
+  table --schema-format full --cell-format repr --prompt-variant task_variant_2 --tools-prompt
+  variant1 -T2 --no-lambda-body-tool --candidate-conditions --candidate-conditions-tool
+  -i0 -n<bestj> tuning-suite/<stem>
+datasets:
+- hypothyroid
+- breast_cancer_wisconsin
+- cylinder_bands
+- pima_diabetes
+- titanic
+- abalone
+- german_credit
+- obesity
+- student_por
+- move1
+bestj:
+  hypothyroid: 1
+  breast_cancer_wisconsin: 53
+  cylinder_bands: 76
+  pima_diabetes: 32
+  titanic: 96
+  abalone: 41
+  german_credit: 45
+  obesity: 97
+  student_por: 6
+  move1: 95

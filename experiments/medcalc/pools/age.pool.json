@@ -1,0 +1,43 @@
+[
+  {
+    "comment": "The '\\A.{0,120}?' prefix confines the match to the note's opening clause, where the patient's own age is stated; without it a later 'diagnosed 4 years ago' outranks it.",
+    "pattern": "(\\d+)[- ]?(?:year|yr|y)s?[- ]?old",
+    "flags": "i",
+    "template": [
+      1,
+      "years"
+    ]
+  },
+  {
+    "pattern": "\\A.{0,120}?(\\d+)[- ]?(?:year|yr|y)s?[- ]?old",
+    "flags": "is",
+    "template": [
+      1,
+      "years"
+    ]
+  },
+  {
+    "pattern": "\\A.{0,120}?(\\d+)[- ]?months?[- ]?old",
+    "flags": "is",
+    "template": [
+      1,
+      "months"
+    ]
+  },
+  {
+    "pattern": "\\A.{0,120}?(\\d+)[- ]?days?[- ]?old",
+    "flags": "is",
+    "template": [
+      1,
+      "days"
+    ]
+  },
+  {
+    "pattern": "\\A.{0,120}?(\\d+)[- ]?weeks?[- ]?old",
+    "flags": "is",
+    "template": [
+      1,
+      "weeks"
+    ]
+  }
+]

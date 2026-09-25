@@ -1,0 +1,34 @@
+[
+  {
+    "pattern": "\\b(?:glucose|glycemia|blood sugar|\\bsugar\\b|hyperglyc\\w*|hypoglyc\\w*)\\b[^.\\d]{0,8}(\\d+(?:\\.\\d+)?)\\s*(mg/dL|mmol/L|g/L)\\b",
+    "flags": "i",
+    "template": [
+      1,
+      2
+    ]
+  },
+  {
+    "pattern": "\\b(?:glucose|glycemia|blood sugar|\\bsugar\\b|hyperglyc\\w*|hypoglyc\\w*)\\b[^.\\d]{0,20}(\\d+(?:\\.\\d+)?)\\s*(mg/dL|mmol/L|g/L)\\b",
+    "flags": "i",
+    "template": [
+      1,
+      2
+    ]
+  },
+  {
+    "pattern": "\\A.*\\b(?:glucose|glycemia|blood sugar|\\bsugar\\b|hyperglyc\\w*|hypoglyc\\w*)\\b[^.\\d]{0,8}(\\d+(?:\\.\\d+)?)\\s*(mg/dL|mmol/L|g/L)\\b",
+    "flags": "is",
+    "template": [
+      1,
+      2
+    ]
+  },
+  {
+    "pattern": "\\b(?:glucose|glycemia|blood sugar|\\bsugar\\b|hyperglyc\\w*|hypoglyc\\w*)\\b[^.\\d]{0,8}(\\d+(?:\\.\\d+)?)\\s*(?![\\w/%µ])",
+    "flags": "i",
+    "template": [
+      1,
+      "mg/dL"
+    ]
+  }
+]

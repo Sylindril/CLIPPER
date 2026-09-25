@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+/.venv/
+.pytest_cache/
+.DS_Store
+
+# Downloaded / generated datasets (see datasets/README.md)
+/test_suite/
+/tuning_suite/*.data
+/tuning_suite/*.csv
+/tuning_suite/*.names
+/tuning_suite/*.test
+/tuning_suite/*.json
+/tuning_suite/hypothyroid/
+/anon_suite/
+/datasets/medcalc_*/
+/pdata/
+
+# Experiment outputs
+/runs/
+/scripts/*-out/
+*.shyp
+*.pyhyp.py
+
+# Paper-output rebuilds
+/data/output/
+# move1 has no public download, so its raw files ship with the repo
+!/tuning_suite/move1.data
+!/tuning_suite/move1.names
+!/tuning_suite/move1.test
+/text_suite/
+/recent_suite/

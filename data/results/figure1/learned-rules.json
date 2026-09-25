@@ -1,0 +1,39 @@
+{
+  "note": "Learned rules and input excerpts shown in Figure 1(b). Weights are the learned rule weights (alpha). Input excerpts are the text printed in the figure.",
+  "rules": [
+    {
+      "panel": "Tabular classification",
+      "task": "Adult: income > $50K",
+      "alpha": 1.0417890499854847,
+      "rule": "marital-status = Married-civ-spouse ∧ education-num ≥ 13 ∧ hours-per-week ≥ 40 ∧ age ≥ 30",
+      "input": "married husband, age 40, education-num 13, 45 hours/week"
+    },
+    {
+      "panel": "Text classification",
+      "task": "MedCalc: which calculator? (MDRD GFR)",
+      "alpha": 0.719354428436217,
+      "rule": "re.search(r'(?:creatinine|Creatinine).*?(\\d+\\.\\d+)\\s*mg/dL', note) and value >= 2.5",
+      "input": "…blood urea nitrogen 24.8 mg/dL, serum creatinine 4.1 mg/dL, sodium…",
+      "match": "creatinine 4.1 mg/dL"
+    },
+    {
+      "panel": "Value extraction",
+      "task": "MedCalc: bicarbonate",
+      "alpha": 0.8573426668524399,
+      "rule": {
+        "pattern": "HCO3[^\\d.]*([\\d.]+)\\s*(mEq/L|mmol/L)",
+        "flags": "i",
+        "template": [
+          1,
+          2
+        ]
+      },
+      "input": "Cl-: 102 mEq/L / HCO3-: 12 mEq/L / BUN: 15 mg/dL",
+      "match": "HCO3-: 12 mEq/L",
+      "output": [
+        12,
+        "mEq/L"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+run_at: '2026-07-31T15:25:32-04:00'
+label: oneshot_candcond
+sizes:
+- 100
+- 250
+- 600
+- 1200
+- 2000
+seeds: 1..10
+workers: 12
+slipper_flags: -R gemini/gemini-3.1-flash-lite --example-format table --schema-format
+  full --cell-format repr --tools-prompt variant1 -T2 --no-lambda-body-tool --candidate-conditions
+  --candidate-conditions-tool --oneshot
+bestj: recomputed per (dataset,size,seed) via slipper-default CV
+min_bestj: 2
+suite: test
+datasets:
+- college
+- water_potability
+- stroke
+- telco_churn
+- compas
+- heloc
+- adult
+- bank_marketing

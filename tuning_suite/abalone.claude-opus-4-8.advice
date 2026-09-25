@@ -1,0 +1,31 @@
+# Abalone age classifier — cheat-sheet
+
+**Task reality.** You're predicting `old` vs `young` from body measurements that stand in for age (rings). Growth in abalone is fast when young then plateaus: size/weight rise steeply early, then flatten while the animal keeps aging. So measurements separate the *very* young from the rest well, but old-vs-middling overlaps heavily. Expect noisy, overlapping classes — aim rules at high-precision corners, not clean global splits.
+
+**Most predictive attributes (and why):**
+- **shell_weight** — strongest single signal. The dried shell keeps accreting material with age even after the animal stops growing in length, so it tracks age better than any dimension. **Larger shell_weight → old.** Make this the backbone of many rules.
+- **sex = I (infant)** — a near-deterministic marker of `young`. Infants haven't matured. Any rule for `young` should lean on `sex==I`. M vs F carries little age signal; treat M and F as roughly interchangeable and don't build rules that hinge on distinguishing them.
+- **diameter / length / height** — correlated with age but saturate early; useful mainly at the low end (small → young). Diameter ≈ length (they're ~collinear); pick one, don't stack both.
+- **whole_weight, viscera_weight** — rise with age but plateau; moderate signal. **Larger → old.**
+- **shucked_weight** (meat) — use with caution. Meat mass fluctuates with season, feeding, and reproductive state, and the meat-to-shell ratio *shifts* with age. High shucked_weight alone is a weaker, noisier age cue than shell_weight.
+
+**Directions:** for every size/weight attribute, larger → `old`, smaller → `young`. `sex==I` → `young`.
+
+**Derived quantities worth trying:**
+- **shell_weight / whole_weight** (shell fraction): older animals invest proportionally more in shell. **Higher ratio → old** — this can beat raw shell_weight because it normalizes for overall body size.
+- **shucked_weight / whole_weight** (meat fraction): tends to be **higher in young**, lower in old (aging shifts mass toward shell). Good for `young` rules.
+- **shell_weight relative to length or diameter**: two abalone of equal length but different shell weight — the heavier-shelled one is older (it kept thickening after growth stalled). A rule combining large shell_weight with only moderate length isolates old individuals well.
+
+**Rule shapes that should work:**
+- `young`: `sex==I` alone, or `sex==I AND small diameter/length` for extra precision; also `high shucked/whole ratio AND small shell_weight`.
+- `old`: `high shell_weight AND high shell/whole ratio`; or `large shell_weight AND large diameter`; or `heavy shell_weight combined with only moderate length` (caught growth-plateau adults).
+- Combine one size dimension + one weight (ideally shell) + optionally a ratio. Pairing shell_weight with a size measure sharpens precision because it separates "big because young-and-growing" from "heavy-shelled because old."
+
+**Pitfalls:**
+- Don't expect a single threshold to cleanly split old/young — the middle is genuinely ambiguous; let boosting stack many local high-precision rules.
+- Collinearity: length/diameter/height/whole_weight all move together. Combining several of them adds little and can overfit; prefer diverse signals (a size + shell_weight + a ratio).
+- shucked_weight and viscera_weight carry non-age variance (condition, season, gut contents) — treat as supporting, not primary.
+- No missing values here, but height has near-zero minima (degenerate/flat measurements) — a height-only rule can be misleading; back it with a weight condition.
+- M vs F is a red herring for age; only I is informative.
+
+**Priority:** shell_weight and shell/whole ratio for `old`; `sex==I` (plus small size) for `young`. Build everything else around those.
