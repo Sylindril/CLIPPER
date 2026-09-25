@@ -494,14 +494,14 @@ def new_anonymization_full(raw, anon):
 
 
 # ---------------------------------------------------------------------------
-# Text classification appendix (CLIPPER without tools, RuleChef, SLIPPER, HS-Tree)
+# Text classification appendix (CLIPPER without tools, SLIPPER, HS-Tree)
 # ---------------------------------------------------------------------------
 
 TEXT_NAMES = {"sms_spam": "SMS spam", "sentiment_amazon": "Amazon",
               "sentiment_imdb": "IMDb", "sentiment_yelp": "Yelp",
               "youtube_spam": "YouTube spam"}
-TEXT_METHODS = {"slopper_text": "CLIPPER (no tools)", "rulechef": "RuleChef",
-                "slipper": "SLIPPER, full data", "hstree": "HS-Tree"}
+TEXT_METHODS = {"slopper_text": "CLIPPER (no tools)", "slipper": "SLIPPER, full data",
+                "hstree": "HS-Tree"}
 
 
 def text_suite_error():
@@ -524,29 +524,6 @@ def text_suite_error():
                 cells.append(f"$\\boldsymbol{{{body}}}$" if best[n][i] else f"${body}$")
             rows.append([method] + cells)
     return write_tabular("text-suite-error", "l" + "r" * len(TEXT_SIZES), rows)
-
-
-def text_suite_rulechef():
-    """RuleChef's mean rule count and test coverage (%) per dataset at n=50, 200, 750."""
-    from .figures import TEXT_DATASETS, load_text
-    frame = load_text()
-    stats = frame[frame.label == "rulechef"].groupby(["dataset", "size"])[["rules", "coverage"]].mean()
-    shown = [50, 200, 750]
-    k = len(shown)
-    rows = [rf" & \multicolumn{{{k}}}{{c}}{{Rules}} & "
-            rf"\multicolumn{{{k}}}{{c}}{{Test documents matched (\%)}} \\",
-            rf"\cmidrule(lr){{2-{1 + k}}}\cmidrule(l){{{2 + k}-{1 + 2 * k}}}",
-            ["Dataset"] + [f"$n={n}$" for n in shown * 2], r"\midrule"]
-    for d in TEXT_DATASETS + ["mean"]:
-        if d == "mean":
-            rows.append(r"\midrule")
-            s_ = stats.groupby(level="size").mean()
-        else:
-            s_ = stats.loc[d]
-        rows.append(["Mean" if d == "mean" else TEXT_NAMES[d]]
-                    + [fmt(s_.loc[n, "rules"]) for n in shown]
-                    + [fmt(s_.loc[n, "coverage"], 0) for n in shown])
-    return write_tabular("text-suite-rulechef", "l" + "r" * (2 * k), rows)
 
 
 def banking77_error():
@@ -585,7 +562,6 @@ def build_all():
     tables.update(hero_tables(tab))
     tables.update({
         "text-suite-error": text_suite_error(),
-        "text-suite-rulechef": text_suite_rulechef(),
         "banking77-error": banking77_error(),
         "new-harness-full": new_harness_full(raw),
         "new-anonymization-full": new_anonymization_full(raw, anon),

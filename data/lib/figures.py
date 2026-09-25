@@ -354,19 +354,14 @@ TEXT_SIZES = [50, 100, 200, 300, 400, 500, 750]
 TEXT_STYLES = {
     "slopper_text": ("CLIPPER, raw text (no tools)", CLIPPER, "^", "-"),
     "slopper": ("CLIPPER, word sets (no tools)", CLIPPER_TOOLS, "v", "-"),
-    "rulechef": ("RuleChef", RULECHEF, "s", "-"),
     "slipper": ("SLIPPER, full data", SLIPPER_FULL, "o", "--"),
     "hstree": ("HS-Tree", RULE_BASELINE, "D", "-"),
 }
 
 
 def load_text():
-    """Per-seed results on the five text datasets, sizes 50-750. RuleChef rows also
-    carry rules (final rule-set size) and coverage (% of test documents matched)."""
-    rulechef = pd.read_csv(RESULTS / "text/rulechef-runs.csv")
-    frame = pd.concat([pd.read_csv(RESULTS / "text/text-runs.csv"),
-                       rulechef[["label", "dataset", "size", "seed", "err", "rules", "coverage"]]],
-                      ignore_index=True)
+    """Per-seed results on the five text datasets, sizes 50-750."""
+    frame = pd.read_csv(RESULTS / "text/text-runs.csv")
     return frame[frame["size"].isin(TEXT_SIZES)]
 
 

@@ -182,7 +182,7 @@ $A --label agent_gpt56_sol_norun --agent codex --model gpt-5.6-sol --forbid-lear
 learning algorithm. The condition without it is "Sol (spec gaming)" in the
 appendix.
 
-### Text classification, RuleChef, and background knowledge (Figure 4b)
+### Text classification and background knowledge (Figure 4b)
 
 ```bash
 T="uv run python scripts/run_learning_curve.py --suite text --min-bestj 0"
@@ -207,19 +207,6 @@ baselines use TF-IDF features. These CLIPPER runs predate the tuned `-R`
 default, so their flags are spelled out (no coverage tools, `M=100`); they
 reproduce the original prompts except for one blank line. These runs used no
 minimum round budget (`--min-bestj 0`).
-
-RuleChef 0.2.2 runs in its own environment, with the same model through
-OpenRouter and the same training subsets:
-
-```bash
-uv venv .rulechef-venv --python 3.12
-VIRTUAL_ENV=.rulechef-venv uv pip install rulechef==0.2.2 openai
-PYTHONIOENCODING=utf-8 OPENROUTER_API_KEY=... .rulechef-venv/bin/python scripts/run_rulechef_curve.py
-```
-
-It uses RuleChef's default settings. Test documents that no rule matches get
-the training subset's majority class, and the `coverage` column records how
-often a rule fired.
 
 ### Banking77: CLIPPER and RuleChef
 

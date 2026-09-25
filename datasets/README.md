@@ -63,7 +63,7 @@ development-suite comparisons.
 
 ## Text-classification suite (`text_suite/`, 5 datasets)
 
-Used for the RuleChef comparison. Each document keeps its raw text (`TEXT`)
+Used for the text-classification comparison (Figure 4b). Each document keeps its raw text (`TEXT`)
 and its set of words (`WORDS`); each dataset has a stratified 25% test split
 (seed 1). See `src/tools/build_text_suite.py` for tokenization.
 

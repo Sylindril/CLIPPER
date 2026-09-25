@@ -11,7 +11,7 @@ from .common import (EIGHT, RESULTS, SEVEN, fmt, load_agents, load_anonymized,
                      load_tabular, macro, macro_table, sem)
 from .figures import (BANKING77_SIZES, CURVE_SIZES, TEXT_DATASETS, TEXT_SIZES,
                       banking77_summary, calculator_error_summary, load_banking77,
-                      load_text, rule_learner_summary, sol_pairs, text_summary)
+                      rule_learner_summary, sol_pairs, text_summary)
 from .tables import anonymization_pairs, n250_summary
 
 
@@ -183,30 +183,15 @@ def medcalc_numbers():
 
 
 def text_numbers():
-    """Text classification (Figure 4c) and the text-suite appendix."""
-    where = "Sec. (LLM-based rule learners), Fig. 4b"
-    runs = load_text()
+    """Text classification (Figure 4b) and the text-suite appendix."""
+    where = "Sec. (text classification), Fig. 4b"
     baselines = ["hstree", "figs", "tao_tree", "boosted_rules", "corels"]
-    s = text_summary(["slopper_text", "slopper", "rulechef", "slipper"] + baselines)
+    s = text_summary(["slopper_text", "slopper", "slipper"] + baselines)
     s = s.set_index(["label", "size"])
     get = lambda l, n: (s.loc[(l, n), "mean_error"], s.loc[(l, n), "sem"])
-    at = lambda l, n: runs[(runs.label == l) & (runs["size"] == n)]
-    z = at("rulechef", 50).merge(at("slopper_text", 50), on=["dataset", "size", "seed"],
-                                 suffixes=("_rc", "_cl"), validate="one_to_one")
-    z["delta"] = z.err_rc - z.err_cl
-    gap = macro(z.groupby("dataset").delta.agg(mean="mean", sem=sem))
-    rc = runs[runs.label == "rulechef"]
-    rc_means = [get("rulechef", n)[0] for n in TEXT_SIZES[:-1]]
-    out = [(where, "n=50: RuleChef minus CLIPPER (no tools) error, paired", pm(gap)),
-           (where, "n=750: CLIPPER (no tools)", pm(get("slopper_text", 750))),
-           (where, "RuleChef macro error at n=50..500 (min-max); at n=750",
-            f"{fmt(min(rc_means))}-{fmt(max(rc_means))}; {pm(get('rulechef', 750))}"),
+    out = [(where, "n=750: CLIPPER (no tools)", pm(get("slopper_text", 750))),
            (where, "n=750: full-data SLIPPER; HS-Tree",
-            f"{pm(get('slipper', 750))}; {pm(get('hstree', 750))}"),
-           (where, "RuleChef rules per fit (mean over fits at n=50-750)",
-            fmt(rc.rules.mean())),
-           (where + "; App. text datasets and RuleChef", "Share of test documents matched by RuleChef's rules (%)",
-            fmt(rc.coverage.mean(), 0))]
+            f"{pm(get('slipper', 750))}; {pm(get('hstree', 750))}")]
     words = [n for n in TEXT_SIZES if get("slopper", n)[0] < get("slipper", n)[0]]
     out.append(("Sec. (background knowledge), Fig. 4b",
                 "Sizes where CLIPPER on word sets beats full-data SLIPPER",
@@ -226,9 +211,9 @@ def text_numbers():
                 f"{fmt(r750.loc['slipper', 'mean'], 2)} (paper prints 6.9 vs 8.3; "
                 f"8.35 rounds half up to {fmt(r750.loc['slipper', 'mean'])})"))
     best = {n: min(baselines, key=lambda l: s.loc[(l, n), "mean_error"]) for n in TEXT_SIZES}
-    out.append(("App. text datasets and RuleChef", "Lowest-error imodels baseline by size",
+    out.append(("App. text datasets", "Lowest-error imodels baseline by size",
                 ", ".join(f"{n}: {best[n]}" for n in TEXT_SIZES)))
-    out.append(("App. text datasets and RuleChef", "HS-Tree minus FIGS at n=50, 100",
+    out.append(("App. text datasets", "HS-Tree minus FIGS at n=50, 100",
                 ", ".join(fmt(get("hstree", n)[0] - get("figs", n)[0]) for n in [50, 100])))
     return out
 

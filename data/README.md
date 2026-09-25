@@ -51,7 +51,6 @@ All rendered labels use the paper's names.
 | `extract_pool`, `extract_{python,regex}_M{20,55,110}` | hand-written regex pool; CLIPPER Python / regex extraction rules |
 | `slopper_text` (text suite) | CLIPPER on raw text, regular expressions allowed, no coverage tools, M=100 |
 | `slopper` (text suite) | CLIPPER reading each document's set of words (SLIPPER's input), no coverage tools, M=100 |
-| `rulechef` | RuleChef 0.2.2 with default settings, same model (Gemini 3.1 Flash-Lite); test documents no rule matches are assigned the training subset's majority class |
 | `slipper`, `hstree`, `figs`, `tao_tree`, `boosted_rules`, `corels` (text suite) | full-data SLIPPER on word sets; imodels baselines on TF-IDF features |
 | `clipper_raw_M100`, `clipper_raw_M100_tools` (Banking77) | CLIPPER on raw query text, M=100, without / with coverage tools (at most six calls per proposal); one-versus-rest over the five intents |
 | `rulechef` (Banking77) | RuleChef 0.2.2 run through its authors' BANKING77 script with their published settings, same model; unmatched queries get the training subset's majority intent |
@@ -126,15 +125,6 @@ All error, accuracy, precision, recall, and F1 values are percentages.
   (`slopper_text`) and on word sets (`slopper`),
   full-data SLIPPER, and the imodels baselines. Columns: `label`, `dataset`,
   `size`, `seed`, `err` (test error %).
-- **`rulechef-runs.csv`**: every RuleChef fit (sizes 50 to 1,000; the paper
-  uses 50 to 750). Columns: `label`, `dataset`, `size`, `seed`, `bestj`
-  (unused, 0), `err`, `rules` (rules in the final rule set), `coverage` (% of
-  test documents matched by at least one rule), `llm_calls`, `latency_s`,
-  `in_tok`, `out_tok`, `cost_usd`.
-- **`rulechef-settings.json`**: RuleChef version and settings (0.2.2,
-  gemini-3.1-flash-lite, at most 10 rules and 5 per class, 50 examples shown,
-  3 refinement iterations; unmatched documents get the training-majority class).
-
 - **`banking77-runs.csv`**: CLIPPER and RuleChef on the five BANKING77
   intents of RuleChef's own benchmark, sizes 50 to 600, ten seeds, scored on
   the 200 official test queries. Columns: `label`, `size`, `seed`, `err` (test
@@ -150,8 +140,9 @@ All error, accuracy, precision, recall, and F1 values are percentages.
   and on word sets, full-data SLIPPER, and the imodels baselines. Used for the
   n=750 comparison in the background-knowledge paragraph.
 
-These feed Figure 4(b), Tables `text-suite-error` and `text-suite-rulechef`,
-and the numbers in the RuleChef comparison and the text-suite appendix.
+`text-runs.csv` and `recent-runs.csv` feed Figure 4(b), Table
+`text-suite-error`, and the numbers in the text-classification and
+background-knowledge paragraphs and the text-suite appendix.
 
 ### `results/model-complexity/`
 
@@ -194,7 +185,8 @@ and the numbers in the RuleChef comparison and the text-suite appendix.
 | Development appendix | `development-configurations` (inline table), `harness-main`, `setcover-development` (inline table) |
 | Dataset-level results appendix | `fixed-seven-summary`, `hero-250-symbolic`, `hero-1200-symbolic-corrected`, `hero-250-slopslip`, `hero-1200-slopslip`, `hero-250-harness`, `hero-1200-harness`, `hero-punchline-curve` |
 | Coding-agent appendix | `new-harness-full`, `new-sol-behavior` (figure), `new-anonymization-full`, `new-backend-full` |
-| Text-suite appendix | `text-suite-error`, `text-suite-rulechef` |
+| Text-suite appendix | `text-suite-error` |
+| Banking77 comparison with RuleChef | `banking77` (figure), `banking77-error` |
 | Model-complexity appendix | `model-complexity` |
 
 Two development-appendix statements come from development runs that are not
