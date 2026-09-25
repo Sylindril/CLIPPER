@@ -473,6 +473,57 @@ def figure4_text():
 
 
 # ---------------------------------------------------------------------------
+# Banking77: CLIPPER and RuleChef on RuleChef's five-intent benchmark
+# ---------------------------------------------------------------------------
+
+BANKING77_SIZES = [50, 100, 200, 400, 600]
+# CLIPPER with coverage tools takes the lighter blue, as in Figure 3.
+BANKING77_STYLES = {
+    "clipper_raw_M100_tools": ("CLIPPER (tools)", CLIPPER_TOOLS, "v", "-"),
+    "clipper_raw_M100": ("CLIPPER (no tools)", CLIPPER, "^", "-"),
+    "rulechef": ("RuleChef", RULECHEF, "s", "-"),
+}
+
+
+def load_banking77():
+    """Per-seed test error (%) on the five BANKING77 intents; ten seeds per cell."""
+    frame = pd.read_csv(RESULTS / "text/banking77-runs.csv")
+    seeds = frame.groupby(["label", "size"]).seed.nunique()
+    assert len(seeds) == len(BANKING77_STYLES) * len(BANKING77_SIZES) and (seeds == 10).all()
+    return frame
+
+
+def banking77_summary():
+    return load_banking77().groupby(["label", "size"]).err.agg(
+        mean_error="mean", sem=sem).reset_index()
+
+
+def banking77():
+    """banking77."""
+    summary = banking77_summary()
+    labels = list(BANKING77_STYLES)
+    plt.rcdefaults()
+    with plt.rc_context(FIG_RC):
+        fig = plt.figure(figsize=(3.7, 2.0))
+        ax = fig.add_axes([.115, .2, .5, .74])
+        handles = draw_lines(ax, summary, labels, BANKING77_STYLES)
+        ax.set_xscale("log")
+        ax.set_xlim(42, 710)
+        # 400 and 600 sit too close on a log axis for both labels; 400 keeps its tick.
+        ax.set_xticks(BANKING77_SIZES, ["50", "100", "200", "", "600"])
+        ax.xaxis.set_minor_locator(NullLocator())
+        ax.set_ylim(0, 57)
+        ax.set_yticks([0, 10, 20, 30, 40, 50])
+        ax.set_xlabel("Training examples", labelpad=3)
+        ax.set_ylabel("Test error (%)", labelpad=3)
+        fig.legend([handles[l] for l in labels], [BANKING77_STYLES[l][0] for l in labels],
+                   loc="center left", bbox_to_anchor=(.645, .57), frameon=False,
+                   handlelength=1.4, handletextpad=.4, labelspacing=.4, borderaxespad=0,
+                   fontsize=LEGEND_SIZE)
+        save(fig, "banking77", dpi=300)
+
+
+# ---------------------------------------------------------------------------
 # Appendix figure: Sol with and without the explicit no-learners instruction
 # ---------------------------------------------------------------------------
 
@@ -551,7 +602,7 @@ def build_all():
     """Build every figure, in paper order; returns the output file stems."""
     builders = [("tabular-main", figure1_overview), ("all-baselines", all_baselines),
                 ("figure3-tabular", figure3_tabular), ("figure4-text", figure4_text),
-                ("new-sol-behavior", sol_behavior)]
+                ("banking77", banking77), ("new-sol-behavior", sol_behavior)]
     for _, build in builders:
         build()
     return [name for name, _ in builders]

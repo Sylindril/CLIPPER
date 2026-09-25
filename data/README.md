@@ -53,6 +53,8 @@ All rendered labels use the paper's names.
 | `slopper` (text suite) | CLIPPER reading each document's set of words (SLIPPER's input), no coverage tools, M=100 |
 | `rulechef` | RuleChef 0.2.2 with default settings, same model (Gemini 3.1 Flash-Lite); test documents no rule matches are assigned the training subset's majority class |
 | `slipper`, `hstree`, `figs`, `tao_tree`, `boosted_rules`, `corels` (text suite) | full-data SLIPPER on word sets; imodels baselines on TF-IDF features |
+| `clipper_raw_M100`, `clipper_raw_M100_tools` (Banking77) | CLIPPER on raw query text, M=100, without / with coverage tools (at most six calls per proposal); one-versus-rest over the five intents |
+| `rulechef` (Banking77) | RuleChef 0.2.2 run through its authors' BANKING77 script with their published settings, same model; unmatched queries get the training subset's majority intent |
 
 ## Files
 
@@ -132,6 +134,15 @@ All error, accuracy, precision, recall, and F1 values are percentages.
 - **`rulechef-settings.json`**: RuleChef version and settings (0.2.2,
   gemini-3.1-flash-lite, at most 10 rules and 5 per class, 50 examples shown,
   3 refinement iterations; unmatched documents get the training-majority class).
+
+- **`banking77-runs.csv`**: CLIPPER and RuleChef on the five BANKING77
+  intents of RuleChef's own benchmark, sizes 50 to 600, ten seeds, scored on
+  the 200 official test queries. Columns: `label`, `size`, `seed`, `err` (test
+  error %), `err_strict` (RuleChef only: error counting queries no rule labels
+  as wrong), `coverage` (RuleChef only: % of test queries labeled by a rule),
+  `rules` (rules in the final model, summed over the five one-versus-rest
+  models for CLIPPER), `llm_calls`, `cost_usd`. Used by the `banking77` figure
+  and table.
 
 - **`recent-runs.csv`**: `label`, `dataset`, `size`, `seed`, `err` on
   `inflation_abstracts`, a text dataset whose labels were published after the

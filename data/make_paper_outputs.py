@@ -48,6 +48,7 @@ TABLE_TITLES = {
     "hero-punchline-curve": "Appendix: complete learning-curve results (per dataset)",
     "text-suite-error": "Appendix: text classification test error by dataset",
     "text-suite-rulechef": "Appendix: RuleChef rule sets (rules, % test documents matched)",
+    "banking77-error": "Banking77: CLIPPER and RuleChef test error (%)",
     "new-harness-full": "Appendix: complete coding-agent comparison, n=250",
     "new-anonymization-full": "Appendix: anonymization on all eight datasets, n=250",
     "new-backend-full": "Appendix: complete backend results, n=250",

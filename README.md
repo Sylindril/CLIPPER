@@ -221,6 +221,34 @@ It uses RuleChef's default settings. Test documents that no rule matches get
 the training subset's majority class, and the `coverage` column records how
 often a rule fired.
 
+### Banking77: CLIPPER and RuleChef
+
+```bash
+uv run python src/tools/build_banking77.py        # once; BANKING77 at a pinned revision
+uv venv .rulechef-venv --python 3.12
+VIRTUAL_ENV=.rulechef-venv uv pip install "rulechef[agentic]==0.2.2" datasets grex
+uv run python scripts/run_banking77.py prepare --seeds 1 2 3 4 5 6 7 8 9 10
+uv run python scripts/run_banking77.py run --rulechef-python .rulechef-venv/bin/python \
+    --only 'clipper_raw_M100/*' 'clipper_raw_M100_tools/*' 'rulechef/*'
+uv run python scripts/run_banking77.py summarize  # writes runs/banking77/results.csv
+```
+
+The data are the five BANKING77 intents that RuleChef's own benchmark uses:
+the 685 official training queries for those intents, and all 200 official test
+queries. `prepare` draws one training subset per (size, seed), and every method
+trains on it. CLIPPER reads the raw query, with `M=100` and with or without
+coverage tools, and fits one two-class model per intent for six rounds, as for
+MedCalc. RuleChef runs its authors' benchmark script
+(`vendor/rulechef/benchmark_banking77.py`, unmodified) with the settings of
+their published run: regular-expression rules, at most 100 rules, 200 examples
+in the prompt, up to 15 rounds of revision, and their agentic coordinator. It
+writes rules from five examples per intent and revises them against the other
+training queries. Both use Gemini 3.1 Flash-Lite (`GEMINI_API_KEY`). Test
+queries that no RuleChef rule matches get the training subset's majority intent;
+the `err_strict` column counts them as errors instead. `run` can be resumed and
+runs cells in parallel; the grid also defines full-data SLIPPER cells, which the
+paper does not report.
+
 ### MedCalc: calculator prediction and value extraction (Figure 4a, Table 4, and the MedCalc appendix)
 
 ```bash

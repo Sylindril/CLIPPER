@@ -9,7 +9,8 @@ import pandas as pd
 from .common import (EIGHT, RESULTS, SEVEN, fmt, load_agents, load_anonymized,
                      load_calculator, load_extraction, load_symbolic_baselines,
                      load_tabular, macro, macro_table, sem)
-from .figures import (CURVE_SIZES, TEXT_DATASETS, TEXT_SIZES, calculator_error_summary,
+from .figures import (BANKING77_SIZES, CURVE_SIZES, TEXT_DATASETS, TEXT_SIZES,
+                      banking77_summary, calculator_error_summary, load_banking77,
                       load_text, rule_learner_summary, sol_pairs, text_summary)
 from .tables import anonymization_pairs, n250_summary
 
@@ -243,6 +244,29 @@ def complexity_numbers():
              ", ".join(str((rules.sample_cap == c).sum()) for c in [20, 55, 110]))]
 
 
+def banking77_numbers():
+    """CLIPPER and RuleChef on the five BANKING77 intents."""
+    where = "Sec. (LLM-based rule learners), Banking77"
+    runs = load_banking77()
+    wide = runs.pivot_table(index=["size", "seed"], columns="label", values="err")
+    out = []
+    for label, name in [("clipper_raw_M100_tools", "CLIPPER (tools)"),
+                        ("clipper_raw_M100", "CLIPPER (no tools)")]:
+        gap = wide["rulechef"] - wide[label]
+        out.append((where, f"RuleChef minus {name} error, mean over paired runs; runs where "
+                    f"{name} is lower", f"{fmt(gap.mean())}; {(gap > 0).sum()} of {len(gap)}"))
+    s = banking77_summary().set_index(["label", "size"]).mean_error
+    later = [s[("rulechef", n)] for n in BANKING77_SIZES[1:]]
+    out.append((where, "RuleChef error from n=100 on (min-max)",
+                f"{fmt(min(later))}-{fmt(max(later))}"))
+    rc = runs[runs.label == "rulechef"]
+    strict = rc.groupby("size").err_strict.mean()
+    out += [(where, "Share of test queries labeled by RuleChef's rules (%)", fmt(rc.coverage.mean(), 0)),
+            ("App. Banking77 and RuleChef", "RuleChef error counting unlabeled queries as errors, "
+             "per-size means (min-max)", f"{fmt(strict.min(), 0)}-{fmt(strict.max(), 0)}")]
+    return out
+
+
 def all_numbers():
     return (tabular_numbers() + agent_numbers() + medcalc_numbers() + text_numbers()
-            + complexity_numbers() + setcover_numbers())
+            + banking77_numbers() + complexity_numbers() + setcover_numbers())

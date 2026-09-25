@@ -549,6 +549,22 @@ def text_suite_rulechef():
     return write_tabular("text-suite-rulechef", "l" + "r" * (2 * k), rows)
 
 
+def banking77_error():
+    """Banking77 test error per size, mean and SEM over ten seeds; bold is the lowest."""
+    from .figures import BANKING77_SIZES, BANKING77_STYLES, banking77_summary
+    stats = banking77_summary().set_index(["label", "size"])
+    labels = list(BANKING77_STYLES)
+    best = {n: lowest([stats.loc[(l, n), "mean_error"] for l in labels]) for n in BANKING77_SIZES}
+    rows = [["Method"] + [f"$n={n}$" for n in BANKING77_SIZES], r"\midrule"]
+    for i, label in enumerate(labels):
+        cells = []
+        for n in BANKING77_SIZES:
+            body = f"{fmt(stats.loc[(label, n), 'mean_error'])}{{\\pm}}{fmt(stats.loc[(label, n), 'sem'])}"
+            cells.append(f"$\\boldsymbol{{{body}}}$" if best[n][i] else f"${body}$")
+        rows.append([BANKING77_STYLES[label][0]] + cells)
+    return write_tabular("banking77-error", "l" + "r" * len(BANKING77_SIZES), rows)
+
+
 # ---------------------------------------------------------------------------
 
 def build_all():
@@ -570,6 +586,7 @@ def build_all():
     tables.update({
         "text-suite-error": text_suite_error(),
         "text-suite-rulechef": text_suite_rulechef(),
+        "banking77-error": banking77_error(),
         "new-harness-full": new_harness_full(raw),
         "new-anonymization-full": new_anonymization_full(raw, anon),
         "new-backend-full": new_backend_full(raw),
