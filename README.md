@@ -30,7 +30,7 @@ wheel in `vendor/` is built for CPython 3.11 on macOS and Windows; see
 
 ```bash
 uv sync --all-groups          # learner + baselines (imodels, wittgenstein, CORELS) + MedCalc (datasets)
-uv run pytest -q              # tests that need datasets or API keys are skipped
+uv run pytest -q              # the Gemini test is skipped without GEMINI_API_KEY
 uv run python datasets/download.py            # tabular and text suites
 uv run python src/tools/anonymize_suite.py
 uv run python src/tools/build_medcalc_extraction_suite.py
@@ -77,26 +77,27 @@ boosting rounds, with a minimum of two, and each condition reuses that budget.
 `experiments/configs/` holds the configuration files recorded for the paper's
 runs. The size and seed lists below are the grids reported in the paper.
 
+The commands below use these shell definitions (bash or zsh; run them in the
+same session):
+
 ```bash
-LC="uv run python scripts/run_learning_curve.py --suite test --min-bestj 2"
+lc() { uv run python scripts/run_learning_curve.py --suite test --min-bestj 2 "$@"; }
 NINE=100,175,250,400,500,600,800,1200,2000
 FIVE=100,250,600,1200,2000
 FL=gemini/gemini-3.1-flash-lite
-HINTS="--example-format table --schema-format full --cell-format repr --prompt-variant task_variant_2"
+HINTS=(--example-format table --schema-format full --cell-format repr --prompt-variant task_variant_2)
 ```
 
 ### CLIPPER against SLIPPER and condition hints (Figure 3a–b, fixed-seven summary)
 
 ```bash
-$LC --label slipper          --sizes $NINE -- -R ''
-$LC --label slipper_M100     --sizes $NINE -- -R '' -M100
-$LC --label slopper          --sizes $NINE -- -R $FL
-$LC --label slopper_notools  --sizes $NINE -- -R $FL -T0
-$LC --label candcond_notools --sizes $NINE -- -R $FL $HINTS -T0 --candidate-conditions
-$LC --label candcond_tool_T2 --sizes $NINE -- -R $FL $HINTS --tools-prompt variant1 -T2 \
+lc --label slipper          --sizes $NINE -- -R ''
+lc --label slipper_M100     --sizes $NINE -- -R '' -M100
+lc --label slopper          --sizes $NINE -- -R $FL
+lc --label slopper_notools  --sizes $NINE -- -R $FL -T0
+lc --label candcond_notools --sizes $NINE -- -R $FL "${HINTS[@]}" -T0 --candidate-conditions
+lc --label candcond_tool_T2 --sizes $NINE -- -R $FL "${HINTS[@]}" --tools-prompt variant1 -T2 \
     --no-lambda-body-tool --candidate-conditions --candidate-conditions-tool
-$LC --label slopper_notools_M200 --sizes 250,1200 -- -R $FL -T0 -M200
-$LC --label slopper_notools_M400 --sizes 250,1200 -- -R $FL -T0 -M400
 ```
 
 ### Established rule learners (Figures 2 and 3c)
@@ -106,10 +107,10 @@ uv run python scripts/run_baseline_curve.py --suite test --sizes $FIVE --seeds 1
     --models ripper,corels,greedy_rule_list,skope_rules,fpskope,rulefit,figs,hstree,tao_tree,boosted_rules,imodels_slipper
 ```
 
-`uv run python scripts/run_baseline_curve.py --list` shows the estimator
+`uv run python scripts/imodels_baselines.py --list` shows the estimator
 settings. The baselines see the same training subsets as the learners above.
 
-### Anonymized names (Figure 4c)
+### Anonymized names (Figure 4d and the anonymization appendix)
 
 ```bash
 uv run python scripts/run_learning_curve.py --suite anon --label slopper --sizes 250 --seeds 10 \
@@ -123,13 +124,13 @@ The anonymized suite draws the same subsets as the original datasets, and
 ### Outer loop: boosting, set cover, one-shot (Table 1 and the covering appendix)
 
 ```bash
-$LC --label slopper_cover    --sizes $FIVE -- -R $FL --weighting cover
-$LC --label slopper_cover_p3 --sizes $FIVE -- -R $FL --weighting cover --cover-patience 3
-$LC --label oneshot_slopper  --sizes $FIVE -- -R $FL --oneshot
-$LC --label discrete_cover   --sizes $FIVE -- -R '' --weighting cover
-$LC --label candcond_cover   --sizes $FIVE -- -R $FL $HINTS --tools-prompt variant1 -T2 \
+lc --label slopper_cover    --sizes $FIVE -- -R $FL --weighting cover
+lc --label slopper_cover_p3 --sizes $FIVE -- -R $FL --weighting cover --cover-patience 3
+lc --label oneshot_slopper  --sizes $FIVE -- -R $FL --oneshot
+lc --label discrete_cover   --sizes $FIVE -- -R '' --weighting cover
+lc --label candcond_cover   --sizes $FIVE -- -R $FL "${HINTS[@]}" --tools-prompt variant1 -T2 \
     --no-lambda-body-tool --candidate-conditions --candidate-conditions-tool --weighting cover
-$LC --label oneshot_candcond --sizes $FIVE -- -R $FL --example-format table --schema-format full \
+lc --label oneshot_candcond --sizes $FIVE -- -R $FL --example-format table --schema-format full \
     --cell-format repr --tools-prompt variant1 -T2 --no-lambda-body-tool \
     --candidate-conditions --candidate-conditions-tool --oneshot
 # Repaired discrete covering (gate-aware sizing + linear growth)
@@ -140,19 +141,19 @@ The repaired-covering runner reuses each cell's round budget. It first checks
 that the `slipper`, `discrete_cover`, `slopper`, and `slopper_cover` rows exist
 and agree on the budget, so run those conditions first.
 
-### Changing CLIPPER's model (Table 3; n=250, three seeds)
+### Changing CLIPPER's model (Table 3 and appendix; n=250, three seeds)
 
 ```bash
-B="$LC --sizes 250 --seeds 3"
-$B --label slopper_g38_T0    -- -R gemini/gemini-3.8-flash -T0
-$B --label slopper_g38       -- -R gemini/gemini-3.8-flash
-$B --label slopper_g25fl_T0  -- -R gemini/gemini-2.5-flash-lite -T0
-$B --label slopper_g25fl     -- -R gemini/gemini-2.5-flash-lite
-$B --label slopper_sonnet_T0 -- -R anthropic/claude-sonnet-5 -T0
-$B --label slopper_haiku_T0  -- -R anthropic/claude-haiku-4-5-20251001 -T0
-$B --label slopper_haiku     -- -R anthropic/claude-haiku-4-5-20251001
-$B --label slopper_luna      -- -R openai/gpt-5.6-luna --reasoning-effort none
-$B --label slopper_qwen9b_T0 -- -R openrouter/qwen/qwen3.5-9b -T0
+b() { lc --sizes 250 --seeds 3 "$@"; }
+b --label slopper_g38_T0    -- -R gemini/gemini-3.8-flash -T0
+b --label slopper_g38       -- -R gemini/gemini-3.8-flash
+b --label slopper_g25fl_T0  -- -R gemini/gemini-2.5-flash-lite -T0
+b --label slopper_g25fl     -- -R gemini/gemini-2.5-flash-lite
+b --label slopper_sonnet_T0 -- -R anthropic/claude-sonnet-5 -T0
+b --label slopper_haiku_T0  -- -R anthropic/claude-haiku-4-5-20251001 -T0
+b --label slopper_haiku     -- -R anthropic/claude-haiku-4-5-20251001
+b --label slopper_luna      -- -R openai/gpt-5.6-luna --reasoning-effort none
+b --label slopper_qwen9b_T0 -- -R openrouter/qwen/qwen3.5-9b -T0
 ```
 
 The Flash-Lite rows reuse seeds 1–3 of `slopper` and `slopper_notools`.
@@ -166,49 +167,23 @@ provider keys in `~/.sandy/.secrets`. See the docstring of
 `scripts/run_agent_curve.py` for setup and scoring.
 
 ```bash
-A="uv run python scripts/run_agent_curve.py --suite test --sizes 250 --seeds 3"
-$A --label agent_opus5    --agent claude --model claude-opus-5
-$A --label agent_sonnet5  --agent claude --model claude-sonnet-5
-$A --label agent_haiku45  --agent claude --model claude-haiku-4-5-20251001
-$A --label agent_gpt56_sol   --agent codex --model gpt-5.6-sol --timeout 3000 --workers 1
-$A --label agent_gpt56_terra --agent codex --model gpt-5.6-terra
-$A --label agent_gpt56_luna  --agent codex --model gpt-5.6-luna
-$A --label agent_gemini35_flash      --agent gemini --model gemini-3.5-flash --max-turns 80
-$A --label agent_gemini31_flashlite  --agent gemini --model gemini-3.1-flash-lite
-$A --label agent_gpt56_sol_norun --agent codex --model gpt-5.6-sol --forbid-learners
+agent() { uv run python scripts/run_agent_curve.py --suite test --sizes 250 --seeds 3 "$@"; }
+agent --label agent_opus5    --agent claude --model claude-opus-5
+agent --label agent_sonnet5  --agent claude --model claude-sonnet-5
+agent --label agent_haiku45  --agent claude --model claude-haiku-4-5-20251001
+agent --label agent_gpt56_sol   --agent codex --model gpt-5.6-sol --timeout 3000 --workers 1
+agent --label agent_gpt56_terra --agent codex --model gpt-5.6-terra
+agent --label agent_gpt56_luna  --agent codex --model gpt-5.6-luna
+agent --label agent_gemini35_flash      --agent gemini --model gemini-3.5-flash --max-turns 80
+agent --label agent_gemini31_flashlite  --agent gemini --model gemini-3.1-flash-lite
+agent --label agent_gpt56_sol_norun --agent codex --model gpt-5.6-sol --forbid-learners
 ```
 
 `--forbid-learners` adds the explicit instruction not to fit an existing
 learning algorithm. The condition without it is "Sol (spec gaming)" in the
 appendix.
 
-### Text classification and background knowledge (Figure 4b)
-
-```bash
-T="uv run python scripts/run_learning_curve.py --suite text --min-bestj 0"
-$T --label slipper -- -R ''
-OLD="--schema-format compressed --example-format dict --prompt-variant baseline -T0 --no-lambda-body-tool --tools-prompt baseline"
-$T --label slopper_text -- -R $FL $OLD --use-text     # CLIPPER on the raw text
-$T --label slopper      -- -R $FL $OLD --hide-text    # CLIPPER on the word sets only
-uv run python scripts/run_baseline_curve.py --suite text --models hstree,figs,tao_tree,boosted_rules,corels
-
-# The same comparison on a dataset whose labels were published after the model's training cutoff
-R="uv run python scripts/run_learning_curve.py --suite recent --min-bestj 0"
-$R --label slipper -- -R ''
-$R --label slopper_text -- -R $FL $OLD --use-text
-$R --label slopper      -- -R $FL $OLD --hide-text
-uv run python scripts/run_baseline_curve.py --suite recent --models hstree,figs,tao_tree,boosted_rules,corels
-```
-
-Each document has its raw text (`TEXT`) and its set of words (`WORDS`).
-`--use-text` gives CLIPPER the raw text and permits regular expressions;
-`--hide-text` restricts it to the word sets that SLIPPER searches. The imodels
-baselines use TF-IDF features. These CLIPPER runs predate the tuned `-R`
-default, so their flags are spelled out (no coverage tools, `M=100`); they
-reproduce the original prompts except for one blank line. These runs used no
-minimum round budget (`--min-bestj 0`).
-
-### Banking77: CLIPPER and RuleChef
+### BANKING77: CLIPPER and RuleChef (Figure 4c and the BANKING77 appendix)
 
 ```bash
 uv run python src/tools/build_banking77.py        # once; BANKING77 at a pinned revision
@@ -236,7 +211,7 @@ the `err_strict` column counts them as errors instead. `run` can be resumed and
 runs cells in parallel; the grid also defines full-data SLIPPER cells, which the
 paper does not report.
 
-### MedCalc: calculator prediction and value extraction (Figure 4a, Table 4, and the MedCalc appendix)
+### MedCalc: value extraction and calculator prediction (Figures 4a–b and the MedCalc appendix)
 
 ```bash
 uv run python src/tools/build_medcalc_extraction_suite.py        # once
@@ -268,7 +243,7 @@ uv run python scripts/run_bestj.py --label discrete -- -R ''
 uv run python scripts/run_bestj.py --label tv2_lambda_toolsv1 -- -R $FL --example-format table \
     --schema-format full --cell-format repr --prompt-variant task_variant_2 -T6 -b \
     --no-count-coverage --tools-prompt variant1
-uv run python scripts/run_bestj.py --label candcond_tool_T2 -- -R $FL $HINTS --tools-prompt variant1 \
+uv run python scripts/run_bestj.py --label candcond_tool_T2 -- -R $FL "${HINTS[@]}" --tools-prompt variant1 \
     -T2 --no-lambda-body-tool --candidate-conditions --candidate-conditions-tool
 uv run python scripts/summarize_results.py 'scripts/bestj-out/*_config.yaml'
 uv run python scripts/run_format_grid.py                 # dict/table x full/compressed schema

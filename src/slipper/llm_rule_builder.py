@@ -88,7 +88,7 @@ from .symbols import Operator
 
 
 
-# Provider phrasings for "no money / no quota", matched case-insensitively
+# Provider phrasings for "no key / no money / no quota", matched case-insensitively
 # against the exception text (which for pydantic-ai's ModelHTTPError includes
 # the provider's response body).  Anthropic returns these as HTTP 400, OpenAI
 # as a 429 or a stream error, OpenRouter as 402 -- so the status code alone is
@@ -101,6 +101,9 @@ _ACCOUNT_ERROR_PHRASES = (
     "requires more credits",          # openrouter
     "insufficient credits",           # openrouter
     "payment required",               # any 402
+    "missing gemini api key",         # litellm, no GEMINI_API_KEY (reported as a 500)
+    "api key not valid",              # gemini, bad key (HTTP 400)
+    "missing credentials",            # openai, no OPENAI_API_KEY (reported as a 500)
 )
 _ACCOUNT_ERROR_STATUS = (401, 402, 403)   # bad key, unpaid, forbidden
 

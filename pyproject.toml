@@ -33,6 +33,7 @@ corels = [
 [dependency-groups]
 dev = [
     "matplotlib>=3.8",
+    "pandas>=2.0",
     "pytest>=8",
     "scipy>=1.11",
 ]

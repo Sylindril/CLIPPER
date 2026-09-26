@@ -56,6 +56,9 @@ Used only to select the prompt and tool configuration (paper appendix,
 RIPPER/SLIPPER distribution. Its three raw files are therefore included in
 `tuning_suite/` and are checked against the same sha256 table.
 
+`pdata/vote1.*` is the congressional-voting sample from the same distribution,
+with its JSON conversion; only the tests use it.
+
 `tuning_suite/*.info` are dataset descriptions (from the UCI/Kaggle data cards)
 read with `--include-advice .info` (older configs call this `--include-info`); `tuning_suite/*.advice` are the model-written notes
 read by `--include-advice .claude-opus-4-8.advice`. Both were used only in
@@ -63,7 +66,8 @@ development-suite comparisons.
 
 ## Text-classification suite (`text_suite/`, 5 datasets)
 
-Used for the text-classification comparison (Figure 4b). Each document keeps its raw text (`TEXT`)
+The paper does not report results on this suite; `src/tools/build_banking77.py`
+reuses its encoding. Each document keeps its raw text (`TEXT`)
 and its set of words (`WORDS`); each dataset has a stratified 25% test split
 (seed 1). See `src/tools/build_text_suite.py` for tokenization.
 
@@ -78,7 +82,23 @@ and its set of words (`WORDS`); each dataset has a stratified 25% test split
 `inflation_abstracts`: economics-inflation research abstracts labeled by
 whether they use machine-learning methods (UCI dataset 1125, 2025). The labels
 were published after the model's training cutoff. It is encoded like the text
-suite (`TEXT` and `WORDS`) with a stratified 25% test split.
+suite (`TEXT` and `WORDS`) with a stratified 25% test split. The paper does not
+report results on it.
+
+## BANKING77 (five intents)
+
+The five intents that RuleChef's own BANKING77 benchmark uses
+(`beneficiary_not_allowed`, `card_arrival`, `disposable_card_limits`,
+`exchange_rate`, `pending_cash_withdrawal`), downloaded from Hugging Face
+(`legacy-datasets/banking77`, revision
+`f54121560de48f2852f90be299010d1d6dc612ec`; Casanueva et al., 2020; license
+CC BY 4.0). The official split is kept: the 685 official training queries of
+those intents form the training pool, and all 200 official test queries are
+the test set. Queries are encoded like the text suite (`TEXT` and `WORDS`).
+
+```bash
+uv run python src/tools/build_banking77.py
+```
 
 ## Anonymized evaluation suite (`anon_suite/`)
 

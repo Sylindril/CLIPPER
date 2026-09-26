@@ -9,9 +9,9 @@ import pandas as pd
 from .common import (EIGHT, RESULTS, SEVEN, fmt, load_agents, load_anonymized,
                      load_calculator, load_extraction, load_symbolic_baselines,
                      load_tabular, macro, macro_table, sem)
-from .figures import (BANKING77_SIZES, CURVE_SIZES, TEXT_DATASETS, TEXT_SIZES,
-                      banking77_summary, calculator_error_summary, load_banking77,
-                      rule_learner_summary, sol_pairs, text_summary)
+from .figures import (BANKING77_SIZES, CURVE_SIZES, banking77_summary,
+                      calculator_error_summary, load_banking77, rule_learner_summary,
+                      sol_pairs)
 from .tables import anonymization_pairs, n250_summary
 
 
@@ -31,9 +31,9 @@ def paired_macro_difference(frame, a, b, datasets):
 
 
 def tabular_numbers():
-    fig3a = "Sec. (coding agent vs discrete search), Fig. 3a"
-    fig3b = "Sec. (more data without longer prompts), Fig. 3b"
-    fig3c = "Sec. (established rule learners), Fig. 3c"
+    fig3a = "Sec. (LLMs build better rules than discrete search), Fig. 3a"
+    fig3b = "Sec. (LLMs build better rules than discrete search), Fig. 3b"
+    fig3c = "Sec. (LLMs build better rules than discrete search), Fig. 3c"
     out = []
     tab = load_tabular()
     mm = macro_table(tab[tab["size"].isin(CURVE_SIZES)],
@@ -79,7 +79,7 @@ def tabular_numbers():
     out.append(("App. model complexity", "Hints+tools rule-count range at n=2,000",
                 f"{ht.min():g} to {ht.max():g}"))
 
-    harness = "Sec. (harness vs model), one rule at a time"
+    harness = "Sec. (the harness matters more than the model), one rule at a time"
     h = macro_table(tab, ["slopper", "oneshot_slopper"]).set_index(["label", "size"])
     at250 = tab[tab["size"] == 250]
     out.append((harness, "n=250: one-shot minus boosted CLIPPER, paired; the two macro errors",
@@ -113,33 +113,33 @@ def agent_numbers():
                                      am=("err_anon", "mean"), as_=("err_anon", sem),
                                      dm=("delta", "mean"), ds=("delta", sem))
     part = lambda c, m, s: macro(c[[m, s]].set_axis(["mean", "sem"], axis=1))
-    out.append(("Sec. (learning without semantic labels), Fig. 4c", "Anonymization, all eight: original -> anonymized; paired change",
+    out.append(("Sec. (background knowledge), Fig. 4d", "Anonymization, all eight: original -> anonymized; paired change",
                 f"{pm(part(cells, 'nm', 'ns'))} -> {pm(part(cells, 'am', 'as_'))}; "
                 f"{pm(part(cells, 'dm', 'ds'))}"))
     seven = cells.loc[SEVEN]
-    out.append(("Sec. (learning without semantic labels)", "Anonymized CLIPPER, fixed seven",
+    out.append(("Sec. (background knowledge)", "Anonymized CLIPPER, fixed seven",
                 pm(part(seven, "am", "as_"))))
 
     s = {l: n250_summary(raw, l) for l in raw.label.unique()}
     seven = lambda l: s[l]["seven"]
-    out.append(("Sec. (harness vs model)", "Flash-Lite in Gemini CLI; Haiku 4.5 in Claude Code vs in CLIPPER (tools)",
+    out.append(("Sec. (the harness matters more than the model)", "Flash-Lite in Gemini CLI; Haiku 4.5 in Claude Code vs in CLIPPER (tools)",
                 f"{pm(seven('agent_gemini31_flashlite'))}; {pm(seven('agent_haiku45'))} vs "
                 f"{pm(seven('slopper_haiku'))}"))
     agents = ["agent_gpt56_sol_norun", "agent_opus5", "agent_gpt56_terra", "agent_sonnet5",
               "agent_gemini35_flash", "agent_gpt56_luna"]
     lo = min(seven(l)[0] for l in agents)
     hi = max(seven(l)[0] for l in agents)
-    out.append(("Sec. (harness vs model)", "CLIPPER Flash-Lite (tools); range of six strongest agents; full-data SLIPPER",
+    out.append(("Sec. (the harness matters more than the model)", "CLIPPER Flash-Lite (tools); range of six strongest agents; full-data SLIPPER",
                 f"{pm(seven('slopper'))}; {fmt(lo)}-{fmt(hi)}; {pm(seven('slipper'))}"))
     cost = raw[raw.seed.between(1, 3) & raw.dataset.isin(SEVEN)].groupby("label").cost_usd.mean()
-    out.append(("Sec. (harness vs model)", "Mean cost per fit (USD), CLIPPER Flash-Lite without tools",
+    out.append(("Sec. (the harness matters more than the model)", "Mean cost per fit (USD), CLIPPER Flash-Lite without tools",
                 f"{cost['slopper_notools']:.2f}"))
-    out.append(("Sec. (harness vs model)", "Mean cost per fit (USD): Terra, Sonnet 5, Gemini 3.5, Opus 5",
+    out.append(("Sec. (the harness matters more than the model)", "Mean cost per fit (USD): Terra, Sonnet 5, Gemini 3.5, Opus 5",
                 ", ".join(f"{cost[l]:.2f}" for l in ["agent_gpt56_terra", "agent_sonnet5",
                                                       "agent_gemini35_flash", "agent_opus5"])))
     t0 = ["slopper_sonnet_T0", "slopper_notools", "slopper_g38_T0", "slopper_g25fl_T0",
           "slopper_qwen9b_T0", "slopper_haiku_T0"]
-    out.append(("Sec. (harness vs model)", "Backends without tools: span of macro error",
+    out.append(("Sec. (the harness matters more than the model)", "Backends without tools: span of macro error",
                 f"{fmt(min(seven(l)[0] for l in t0))}-{fmt(max(seven(l)[0] for l in t0))}"))
 
     # Appendix: Sol (spec gaming) vs Sol with the explicit no-learners instruction.
@@ -162,7 +162,7 @@ def agent_numbers():
 
 
 def medcalc_numbers():
-    where = "Sec. (text classification), Fig. 4a"
+    where = "Sec. (text classification), Fig. 4b"
     err = calculator_error_summary("final").set_index(["label", "cap"])
     get = lambda l, c: (err.loc[(l, c), "mean_error"], err.loc[(l, c), "sem"])
     out = []
@@ -176,45 +176,9 @@ def medcalc_numbers():
     ext = load_extraction()
     ext = ext[ext.split == "final"].groupby("condition")[["micro_p", "micro_r", "micro_f1"]]
     m = ext.mean()
-    out.append(("Sec. (value extraction)", "Python M=55 micro F1 vs pool",
+    out.append(("Sec. (value-returning rules), Fig. 4a", "Python M=55 micro F1 vs pool",
                 f"{fmt(m.loc['extract_python_M55', 'micro_f1'])} vs "
                 f"{fmt(m.loc['extract_pool', 'micro_f1'])}"))
-    return out
-
-
-def text_numbers():
-    """Text classification (Figure 4b) and the text-suite appendix."""
-    where = "Sec. (text classification), Fig. 4b"
-    baselines = ["hstree", "figs", "tao_tree", "boosted_rules", "corels"]
-    s = text_summary(["slopper_text", "slopper", "slipper"] + baselines)
-    s = s.set_index(["label", "size"])
-    get = lambda l, n: (s.loc[(l, n), "mean_error"], s.loc[(l, n), "sem"])
-    out = [(where, "n=750: CLIPPER (no tools)", pm(get("slopper_text", 750))),
-           (where, "n=750: full-data SLIPPER; HS-Tree",
-            f"{pm(get('slipper', 750))}; {pm(get('hstree', 750))}")]
-    words = [n for n in TEXT_SIZES if get("slopper", n)[0] < get("slipper", n)[0]]
-    out.append(("Sec. (background knowledge), Fig. 4b",
-                "Sizes where CLIPPER on word sets beats full-data SLIPPER",
-                f"{len(words)} of {len(TEXT_SIZES)}"))
-    for n in [50, 750]:
-        out.append(("Sec. (background knowledge), Fig. 4b",
-                    f"n={n}: CLIPPER on word sets vs full-data SLIPPER",
-                    f"{fmt(get('slopper', n)[0])} vs {fmt(get('slipper', n)[0])}"))
-    # A text dataset whose labels were published after the model's training
-    # cutoff (inflation_abstracts), n=750.
-    recent = pd.read_csv(RESULTS / "text/recent-runs.csv")
-    r750 = recent[recent["size"] == 750].groupby("label").err.agg(["mean", sem, "count"])
-    assert (r750["count"] == 10).all()
-    out.append(("Sec. (background knowledge)",
-                "Post-cutoff dataset, n=750: lowest-error method; CLIPPER raw text vs SLIPPER",
-                f"{r750['mean'].idxmin()}; {fmt(r750.loc['slopper_text', 'mean'], 2)} vs "
-                f"{fmt(r750.loc['slipper', 'mean'], 2)} (paper prints 6.9 vs 8.3; "
-                f"8.35 rounds half up to {fmt(r750.loc['slipper', 'mean'])})"))
-    best = {n: min(baselines, key=lambda l: s.loc[(l, n), "mean_error"]) for n in TEXT_SIZES}
-    out.append(("App. text datasets", "Lowest-error imodels baseline by size",
-                ", ".join(f"{n}: {best[n]}" for n in TEXT_SIZES)))
-    out.append(("App. text datasets", "HS-Tree minus FIGS at n=50, 100",
-                ", ".join(fmt(get("hstree", n)[0] - get("figs", n)[0]) for n in [50, 100])))
     return out
 
 
@@ -231,7 +195,7 @@ def complexity_numbers():
 
 def banking77_numbers():
     """CLIPPER and RuleChef on the five BANKING77 intents."""
-    where = "Sec. (LLM-based rule learners), Banking77"
+    where = "Sec. (text classification), Fig. 4c; App. BANKING77"
     runs = load_banking77()
     wide = runs.pivot_table(index=["size", "seed"], columns="label", values="err")
     out = []
@@ -253,5 +217,5 @@ def banking77_numbers():
 
 
 def all_numbers():
-    return (tabular_numbers() + agent_numbers() + medcalc_numbers() + text_numbers()
-            + banking77_numbers() + complexity_numbers() + setcover_numbers())
+    return (tabular_numbers() + agent_numbers() + medcalc_numbers() + banking77_numbers()
+            + complexity_numbers() + setcover_numbers())

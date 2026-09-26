@@ -45,7 +45,7 @@ Rule_llm_model = ""        # empty = discrete grammar search; else litellm model
 Prompt_file = None         # None = built-in template in llm_rule_builder.py
 # Per-round weighted sample passed to the rule builder (both paths).
 # 0 means "no sampling, use the full training set".
-# None means "unset on the command line"; cli.py resolves to 50 if -R else 0.
+# None means "unset on the command line"; cli.py resolves to 100 if -R else 0.
 Sample_size = None
 Log_stem = None            # if set, write each round's rendered prompt examples to
                            # "{stem}-NNN.txt"; when tools are enabled also write the
@@ -124,7 +124,7 @@ Retrieval_max_rows = 20    # new rows per rule proposal, shared across retries
 Retrieval_per_call = 10    # maximum rows returned by one retrieval call
 Retrieval_max_chars = 20000  # cumulative JSON row characters per rule proposal
 Tools_prompt = "variant1"  # --tools-prompt: which wording the LLM tools-hint uses
-                           # -- "baseline" (default) or "variant1", the reworked
+                           # -- "variant1" (default), the reworked
                            # intro/lambda/value tool descriptions that stress the
                            # sample is a subset (~1/captured x smaller) and lean on
                            # the full-data tools. Only affects prompts when tools

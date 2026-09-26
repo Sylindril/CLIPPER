@@ -38,7 +38,7 @@ cannot drift).
 
 Run from the repo root::
 
-    python src/tools/build_recent_suite.py            # writes recent_suite/*.json (inflation_abstracts is the one the paper uses)
+    python src/tools/build_recent_suite.py            # writes recent_suite/*.json (inflation_abstracts)
 """
 
 import csv

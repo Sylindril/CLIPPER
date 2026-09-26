@@ -11,7 +11,7 @@ summarize writes results.csv, one row per complete (label, size, seed).
 SLIPPER and CLIPPER use MedCalc's one-vs-rest variant: one two-class fit per
 intent (`intent=c` vs `intent=rest`), decoded by the centred argmax
 argmax_c(score_c - default_alpha_c).  SLIPPER reads the WORDS token set; CLIPPER
-reads the raw TEXT with its coverage tool switched off.  RuleChef runs its own
+reads the raw TEXT, with and without its coverage tool.  RuleChef runs its own
 benchmark script through scripts/run_rulechef_banking77.py in its own interpreter.
 
     uv run python scripts/run_banking77.py prepare --seeds 1 2 3
@@ -92,7 +92,9 @@ def prepare(out, sizes, seeds):
                 cid = f"{c['condition']}/n{size}/seed{seed:02d}" + (f"/{c['target']}" if c["target"] else "")
                 if cid not in known:
                     manifest["cells"].append(dict(c, id=cid, size=size, seed=seed, input=path))
-    manifest["git_commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip()
+    # None outside a git checkout (e.g., an unpacked archive).
+    manifest["git_commit"] = subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO, text=True,
+                                            capture_output=True).stdout.strip() or None
     write_json(out / "manifest.json", manifest)
     print(f"{len(manifest['cells'])} cells over {len(manifest['inputs'])} subsamples", flush=True)
 

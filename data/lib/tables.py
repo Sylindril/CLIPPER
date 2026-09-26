@@ -319,17 +319,6 @@ def extraction_final_repeats():
     return write_tabular("extraction-final-repeats", "lrrrr", rows)
 
 
-def extraction_f1_main():
-    s = extraction_summary()
-    f1 = lambda c: pm(s.loc[c, ("micro_f1", "mean")], s.loc[c, ("micro_f1", "sem")])
-    rows = [["$M$", "Python", "Regex"], r"\midrule"]
-    for m in [20, 55, 110]:
-        rows.append([str(m), f1(f"extract_python_M{m}"), f1(f"extract_regex_M{m}")])
-    rows += [r"\midrule", ["Pool", r"\multicolumn{2}{c}{$"
-                           + fmt(s.loc["extract_pool", ("micro_f1", "mean")]) + "$}"]]
-    return write_tabular("extraction-f1-main", "lcc", rows)
-
-
 # ---------------------------------------------------------------------------
 # n=250 agents, backends, and anonymization (three or ten matched seeds)
 # ---------------------------------------------------------------------------
@@ -493,39 +482,6 @@ def new_anonymization_full(raw, anon):
     return write_tabular("new-anonymization-full", "lrrr", rows)
 
 
-# ---------------------------------------------------------------------------
-# Text classification appendix (CLIPPER without tools, SLIPPER, HS-Tree)
-# ---------------------------------------------------------------------------
-
-TEXT_NAMES = {"sms_spam": "SMS spam", "sentiment_amazon": "Amazon",
-              "sentiment_imdb": "IMDb", "sentiment_yelp": "Yelp",
-              "youtube_spam": "YouTube spam"}
-TEXT_METHODS = {"slopper_text": "CLIPPER (no tools)", "slipper": "SLIPPER, full data",
-                "hstree": "HS-Tree"}
-
-
-def text_suite_error():
-    """Test error per text dataset and training size; bold is the lowest per size."""
-    from .figures import TEXT_DATASETS, TEXT_SIZES, load_text
-    frame = load_text()
-    frame = frame[frame.label.isin(TEXT_METHODS)]
-    stats = frame.groupby(["dataset", "label", "size"]).err.agg(mean="mean", sem=sem)
-    blocks = [(TEXT_NAMES[d], stats.loc[d]) for d in TEXT_DATASETS]
-    blocks.append(("Macro", stats.groupby(["label", "size"]).apply(macro).apply(
-        pd.Series).set_axis(["mean", "sem"], axis=1)))
-    rows = [["Method"] + [f"$n={n}$" for n in TEXT_SIZES]]
-    for name, block in blocks:
-        rows += [r"\midrule", rf"\multicolumn{{{len(TEXT_SIZES) + 1}}}{{@{{}}l}}{{\textit{{{name}}}}} \\"]
-        best = {n: lowest([block.loc[(l, n), "mean"] for l in TEXT_METHODS]) for n in TEXT_SIZES}
-        for i, (label, method) in enumerate(TEXT_METHODS.items()):
-            cells = []
-            for n in TEXT_SIZES:
-                body = f"{fmt(block.loc[(label, n), 'mean'])}{{\\pm}}{fmt(block.loc[(label, n), 'sem'])}"
-                cells.append(f"$\\boldsymbol{{{body}}}$" if best[n][i] else f"${body}$")
-            rows.append([method] + cells)
-    return write_tabular("text-suite-error", "l" + "r" * len(TEXT_SIZES), rows)
-
-
 def banking77_error():
     """Banking77 test error per size, mean and SEM over ten seeds; bold is the lowest."""
     from .figures import BANKING77_SIZES, BANKING77_STYLES, banking77_summary
@@ -551,7 +507,6 @@ def build_all():
         "outer-loop-main": outer_loop_main(tab),
         "agents-main": agents_main(raw),
         "backends-main": backends_main(raw),
-        "extraction-f1-main": extraction_f1_main(),
         "calculator-final-repeats": calculator_final_repeats(),
         "extraction-final-repeats": extraction_final_repeats(),
         "development-configurations": development_configurations(),
@@ -561,7 +516,6 @@ def build_all():
     }
     tables.update(hero_tables(tab))
     tables.update({
-        "text-suite-error": text_suite_error(),
         "banking77-error": banking77_error(),
         "new-harness-full": new_harness_full(raw),
         "new-anonymization-full": new_anonymization_full(raw, anon),

@@ -68,6 +68,7 @@ HELP = [
     "       --table-minibatch-size=R  render the table-format sample as subtables of <= R rows, each with its own header (0 = off, default)",
     "       --prompt-variant=NAME  LLM task variant: 'task_variant_2' (default, single conjunction), 'baseline', 'task_variant_1' (cluster/None)",
     "       --include-advice=EXT   if STEM<EXT> exists (e.g. .info), add its text to the LLM prompt as task advice",
+    "       --include-info         same as --include-advice .info (the name used by older recorded configs)",
     "       --stratify             draw the first round's -M sample class-balanced (k/2 pos + k/2 neg)",
     "       --weighting=NAME       between-round example weighting: 'boost' (default, SLIPPER's confidence-rated update), 'cover' (greedy set cover: covered examples drop out, hypothesis is a disjunction of positive rules) or 'coverlist' (same cover step, but each rule carries its own consequent: a CN2/RIPPER ordered decision list, gate p != n)",
     "       --cover-objective=NAME rule-growth objective under --weighting cover/coverlist: 'foil' (default, FOIL gain) or 'linear' (p - n + 1, the objective the acceptance gate measures).  Under coverlist each becomes its two-sided form",
@@ -180,7 +181,7 @@ def main(argv):
         "require-tool-output", "llm-extra-body=",
         "example-format=", "schema-format=", "cell-format=", "prompt-variant=",
         "table-minibatch-size=",
-        "include-advice=", "stratify", "pruning-agent", "weighting=", "oneshot",
+        "include-advice=", "include-info", "stratify", "pruning-agent", "weighting=", "oneshot",
         "config=", "save-config=", "use-text", "hide-text",
         "rule-pool=", "rule-body=", "claimed-tool-budget=", "cover-objective=", "cover-sizing=", "cover-patience=",
         "help",
@@ -435,8 +436,8 @@ def main(argv):
                       % (", ".join(sorted(_PROMPT_VARIANTS)), a))
             config.Prompt_variant = v
             echoes.append(lambda v=v: print("option: LLM prompt variant = %s" % v))
-        elif o == "--include-advice":
-            ext = a.strip()
+        elif o in ("--include-advice", "--include-info"):
+            ext = ".info" if o == "--include-info" else a.strip()
             if not ext:
                 fatal("--include-advice needs a file extension, e.g. "
                       "--include-advice .info")

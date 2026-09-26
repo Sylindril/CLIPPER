@@ -19,9 +19,9 @@ from scipy import stats
 from . import figure_baselines
 from .common import (EIGHT, FIGURES, RESULTS, SEVEN, load_agents, load_anonymized,
                      load_calculator, load_symbolic_baselines, load_tabular, macro_table, sem)
-from .style import (CLIPPER, CLIPPER_HINTS, CLIPPER_TOOLS, CORELS, RULE_BASELINE,
-                    RULECHEF, SLIPPER, SLIPPER_FULL)
-from .tables import anonymization_pairs
+from .style import (CLIPPER, CLIPPER_HINTS, CLIPPER_HINTS_TOOLS, CLIPPER_TOOLS, CORELS,
+                    RULE_BASELINE, RULECHEF, SLIPPER, SLIPPER_FULL)
+from .tables import anonymization_pairs, extraction_summary
 
 INK, MUTED, GRID = "#26343C", "#64717B", "#E2E6EA"
 
@@ -58,7 +58,7 @@ def learned_rule_cards(card, width, height):
                                   facecolor="white", edgecolor="#B9C0C7", linewidth=.7))
     card.text(.12, height - .17, "(b) Learned rules at work", fontsize=9, va="center", color=ink)
     card.text(2.04, height - .175,
-              "Each rule is code that runs without an LLM; a matching rule adds its weight.",
+              r"Rules run as code, without an LLM. A rule that matches casts a vote of weight $\alpha$.",
               fontsize=7.2, color=muted, va="center")
 
     def segments(x, y, parts, size=6.5, mono=False):
@@ -97,21 +97,21 @@ def learned_rule_cards(card, width, height):
              mono=False,
              rule=[[("married ∧ education-num ≥ 13", "txt")],
                    [("∧ hours ≥ 40 ∧ age ≥ 30", "txt")]],
-             out=f"adds {alpha['Tabular classification']:+.2f} toward >$50K"),
+             out=f"vote >\\$50K ($\\alpha$ = {alpha['Tabular classification']:.2f})", fires=True),
         dict(title="Text classification", task="MedCalc: which calculator?",
              input=[[("…blood urea nitrogen 24.8 mg/dL,", False)],
                     [("serum ", False), ("creatinine 4.1 mg/dL", True), (", sodium…", False)]],
              mono=False,
              rule=[[(r"creatinine…(\d+\.\d+)\s*mg/dL", "re")],
                    [("matches, and the value ≥ 2.5", "txt")]],
-             out=f"adds {alpha['Text classification']:+.2f} toward MDRD GFR"),
+             out=f"vote MDRD GFR ($\\alpha$ = {alpha['Text classification']:.2f})", fires=True),
         dict(title="Value extraction", task="MedCalc: bicarbonate",
              input=[[("Cl-: 102 mEq/L", False)], [("HCO3-: 12 mEq/L", True)],
                     [("BUN: 15 mg/dL", False)]],
              mono=True,
              rule=[[(r"HCO3[^\d.]*([\d.]+)\s*(mEq/L|mmol/L)", "re")],
                    [("returns the number and unit", "txt")]],
-             out="returns [12, mEq/L]"),
+             out="returns 12 mEq/L", fires=False),
     ]
     for k, c in enumerate(columns):
         x = pad + k * (col + gap)
@@ -132,6 +132,9 @@ def learned_rule_cards(card, width, height):
         for j, parts in enumerate(c["rule"]):
             rule_text(x + .02, ry - j * .12, parts)
         down(x + col / 2, ry - .2, ry - .32)
+        if c["fires"]:
+            card.text(x + col / 2 + .07, ry - .26, "matches", fontsize=6.2,
+                      color=muted, va="center")
         oy = ry - .43
         card.text(x + col / 2, oy, c["out"], fontsize=6.8, ha="center", va="center",
                   color=positive, bbox=dict(boxstyle="round,pad=.25", facecolor="#EAF3EE",
@@ -219,12 +222,13 @@ FIG_RC = {"font.family": "DejaVu Sans", "font.size": 7.5, "axes.labelsize": 7.5,
           "font.weight": "normal", "axes.titleweight": "normal",
           "pdf.fonttype": 42, "ps.fonttype": 42, "savefig.facecolor": "white"}
 # (legend text, color, marker, linestyle); only full-data SLIPPER is dashed.
-# Tools: slopper_notools and candcond_notools run without tools; slopper uses
-# the coverage tools.
+# Tools: slopper_notools and candcond_notools run without tools (-T0); slopper
+# uses the coverage tool, and candcond_tool_T2 the condition-hints tool (-T2).
 TABULAR_STYLES = {
     "slopper_notools": ("CLIPPER (no tools)", CLIPPER, "^", "-"),
     "candcond_notools": ("CLIPPER (no tools) + hints", CLIPPER_HINTS, "v", "-"),
     "slopper": ("CLIPPER (tools)", CLIPPER_TOOLS, "<", "-"),
+    "candcond_tool_T2": ("CLIPPER (tools) + hints", CLIPPER_HINTS_TOOLS, "d", "-"),
     "slipper_M100": ("SLIPPER, $M=100$", SLIPPER, "s", "-"),
     "slipper": ("SLIPPER, full data", SLIPPER_FULL, "o", "--"),
     "corels": ("CORELS", CORELS, "D", "-"),
@@ -233,8 +237,8 @@ TABULAR_STYLES = {
     "skope_rules": ("SkopeRules", RULE_BASELINE, "P", "-"),
     "fpskope": ("FPSkope", RULE_BASELINE, "X", "-"),
 }
-PANEL_A = ["slopper_notools", "slipper_M100", "slipper"]
-PANEL_B = ["slopper_notools", "candcond_notools", "slipper"]
+PANEL_A = ["slopper_notools", "slopper", "slipper_M100", "slipper"]
+PANEL_B = ["slopper_notools", "candcond_notools", "slopper", "candcond_tool_T2", "slipper"]
 PANEL_C = ["slopper", "slipper", "slipper_M100", "corels", "ripper",
            "greedy_rule_list", "skope_rules", "fpskope"]
 SHORT = {"adult": "Adult", "bank_marketing": "Bank", "college": "College",
@@ -323,8 +327,9 @@ def figure3_tabular():
         ax_b.tick_params(axis="y", labelleft=False)
         ax_c.set_ylim(20.7, 29.3)
         ax_c.set_yticks([22, 24, 26, 28])
-        order = ["slopper_notools", "candcond_notools", "slopper", "slipper_M100",
-                 "slipper", "corels", "ripper", "greedy_rule_list", "skope_rules", "fpskope"]
+        order = ["slopper_notools", "candcond_notools", "slopper", "candcond_tool_T2",
+                 "slipper_M100", "slipper", "corels", "ripper", "greedy_rule_list",
+                 "skope_rules", "fpskope"]
         fig.legend([handles[l] for l in order], [TABULAR_STYLES[l][0] for l in order],
                    loc="upper left", bbox_to_anchor=(.005, .165), ncol=4, frameon=False,
                    handlelength=1.4, handletextpad=.4, columnspacing=1.0, labelspacing=.4,
@@ -333,44 +338,36 @@ def figure3_tabular():
 
 
 # ---------------------------------------------------------------------------
-# Figure 4: (a) MedCalc calculators, (b) text classification, (c) without feature names
+# Figure 4: (a) value extraction, (b) MedCalc calculators, (c) BANKING77,
+# (d) without feature names
 # ---------------------------------------------------------------------------
 
+# (a) Extraction rules use no tools. The pool is the fixed regex pool, evaluated once.
+EXTRACTION_M = [20, 55, 110]
+# (legend text, face color, hatch)
+EXTRACTION_STYLES = {
+    "python": ("CLIPPER, Python", CLIPPER, None),
+    "regex": ("CLIPPER, regex", "white", "//////"),
+}
+POOL = ("Pool (Fable 5.1)", RULE_BASELINE)
 CAPS = [1, 4, 16, 64]
 # Calculators with fewer training notes than the cap contribute all they have,
 # so the realized training sizes are 55, 220, 870, and 3,302 notes; the axis
 # plots each at its nearest multiple of 55.
 PLOTTED_SIZE = {1: 55, 4: 220, 16: 880, 64: 3300}
+# CLIPPER with coverage tools takes Figure 3's lighter tools blue and left
+# triangle; CLIPPER without tools its darker blue and upward triangle.
 MEDCALC_STYLES = {
-    "slopper_raw_M20": ("CLIPPER (tools), $M=20$", CLIPPER, "^", "-"),
+    "slopper_raw_M20": ("CLIPPER (tools), $M=20$", CLIPPER_TOOLS, "<", "-"),
     "slipper_M20": ("SLIPPER, $M=20$", SLIPPER, "s", "-"),
     "slipper_full": ("SLIPPER, full data", SLIPPER_FULL, "o", "--"),
 }
-# Text: both CLIPPER lines use no tools and M=100; `slopper_text` reads the raw
-# text (regular expressions allowed), `slopper` the set of words SLIPPER sees.
-TEXT_DATASETS = ["sms_spam", "sentiment_amazon", "sentiment_imdb", "sentiment_yelp",
-                 "youtube_spam"]
-TEXT_SIZES = [50, 100, 200, 300, 400, 500, 750]
-TEXT_STYLES = {
-    "slopper_text": ("CLIPPER, raw text (no tools)", CLIPPER, "^", "-"),
-    "slopper": ("CLIPPER, word sets (no tools)", CLIPPER_TOOLS, "v", "-"),
-    "slipper": ("SLIPPER, full data", SLIPPER_FULL, "o", "--"),
-    "hstree": ("HS-Tree", RULE_BASELINE, "D", "-"),
+BANKING77_SIZES = [50, 100, 200, 400, 600]
+BANKING77_STYLES = {
+    "clipper_raw_M100_tools": ("CLIPPER (tools)", CLIPPER_TOOLS, "<", "-"),
+    "clipper_raw_M100": ("CLIPPER (no tools)", CLIPPER, "^", "-"),
+    "rulechef": ("RuleChef", RULECHEF, "s", "-"),
 }
-
-
-def load_text():
-    """Per-seed results on the five text datasets, sizes 50-750."""
-    frame = pd.read_csv(RESULTS / "text/text-runs.csv")
-    return frame[frame["size"].isin(TEXT_SIZES)]
-
-
-def text_summary(labels=None):
-    """Macro error over the five text datasets, per learner and training size."""
-    labels = labels or list(TEXT_STYLES)
-    out = macro_table(load_text(), labels, datasets=TEXT_DATASETS)
-    assert len(out) == len(labels) * len(TEXT_SIZES)
-    return out.rename(columns={"mean": "mean_error"})
 
 
 def calculator_error_summary(split="final"):
@@ -380,6 +377,44 @@ def calculator_error_summary(split="final"):
     out = frame.groupby(["condition", "cap"]).error.agg(mean_error="mean", sem=sem).reset_index()
     out["size"] = out.cap.map(PLOTTED_SIZE)
     return out.rename(columns={"condition": "label"})
+
+
+def load_banking77():
+    """Per-seed test error (%) on the five BANKING77 intents; ten seeds per cell."""
+    frame = pd.read_csv(RESULTS / "text/banking77-runs.csv")
+    seeds = frame.groupby(["label", "size"]).seed.nunique()
+    assert len(seeds) == len(BANKING77_STYLES) * len(BANKING77_SIZES) and (seeds == 10).all()
+    return frame
+
+
+def banking77_summary():
+    return load_banking77().groupby(["label", "size"]).err.agg(
+        mean_error="mean", sem=sem).reset_index()
+
+
+def draw_extraction(ax):
+    """Official-test micro F1 (%) with SEM over ten seeds, and the pool as a line."""
+    s = extraction_summary("final")["micro_f1"]
+    handles = {}
+    width, gap = .36, .03
+    x = np.arange(len(EXTRACTION_M))
+    for i, (body, (name, face, hatch)) in enumerate(EXTRACTION_STYLES.items()):
+        group = s.loc[[f"extract_{body}_M{m}" for m in EXTRACTION_M]]
+        handles[body] = ax.bar(
+            x + (i - .5) * (width + gap), group["mean"], width, yerr=group["sem"],
+            color=face, edgecolor=CLIPPER, hatch=hatch, linewidth=.7, zorder=2,
+            error_kw=dict(ecolor=INK, elinewidth=.65, capsize=1.6, capthick=.65))
+    handles["pool"] = ax.axhline(s.loc["extract_pool", "mean"], color=POOL[1],
+                                 linestyle=(0, (3.2, 1.8)), linewidth=1.1, zorder=3)
+    style_axis(ax)
+    ax.grid(axis="y", color=GRID, linewidth=.6)
+    ax.set_xticks(x, [str(m) for m in EXTRACTION_M])
+    ax.set_xlim(-.6, len(EXTRACTION_M) - .4)
+    ax.set_xlabel("Examples per proposal ($M$)", labelpad=3)
+    ax.set_ylabel("Micro F1 (%)", labelpad=3)
+    ax.set_ylim(0, 100)
+    ax.set_yticks([0, 25, 50, 75, 100])
+    return handles
 
 
 def draw_anonymization(ax, paired):
@@ -426,96 +461,66 @@ def draw_anonymization(ax, paired):
 def figure4_text():
     """figure4-text."""
     medcalc = calculator_error_summary("final")
-    text = text_summary()
+    medcalc = medcalc[medcalc.label.isin(MEDCALC_STYLES)]
+    assert len(medcalc) == len(MEDCALC_STYLES) * len(CAPS)
+    banking = banking77_summary()
     paired = anonymization_pairs(load_agents(), load_anonymized())
+    assert len(paired) == 80
+    width, height = 5.5, 2.68
+    axes_y, axes_h = 1.02, 1.24   # shared axes row, inches from the bottom
     plt.rcdefaults()
     with plt.rc_context(FIG_RC):
-        fig = plt.figure(figsize=(5.5, 3.0))
-        axes_y, axes_h = .44, .43
-        ax_a = fig.add_axes([.075, axes_y, .235, axes_h])
-        ax_b = fig.add_axes([.375, axes_y, .235, axes_h])
-        ax_c = fig.add_axes([.76, axes_y, .225, axes_h])
-        panel_titles(fig, [(.075, "(a) MedCalc calculators", "Official test split"),
-                           (.375, "(b) Text classification", "Five datasets"),
-                           (.655, "(c) Without feature names", "CLIPPER (tools), $n=250$")])
-        med_handles = draw_lines(ax_a, medcalc, list(MEDCALC_STYLES), MEDCALC_STYLES)
-        text_handles = draw_lines(ax_b, text, list(TEXT_STYLES), TEXT_STYLES)
-        draw_anonymization(ax_c, paired)
-        ax_c.set_xlabel("Anonymized − natural\nerror (pp)", labelpad=3, linespacing=1.15)
-        ax_a.set_ylabel("Test error (%)", labelpad=3)
-        ax_a.set_xscale("log", base=2)
-        ax_a.set_xlim(43, 4200)
-        ax_a.set_xticks(list(PLOTTED_SIZE.values()), ["55", "220", "880", "3.3k"])
-        ax_a.xaxis.set_minor_locator(NullLocator())
-        ax_a.set_ylim(50, 92)
-        ax_a.set_yticks([50, 60, 70, 80, 90])
-        ax_a.set_xlabel("Training examples", labelpad=3)
-        ax_b.set_xscale("log")
-        ax_b.set_xlim(42, 880)
-        ax_b.set_xticks([50, 100, 200, 400, 750], ["50", "100", "200", "400", "750"])
+        fig = plt.figure(figsize=(width, height))
+
+        def axes(left, span):
+            return fig.add_axes([left / width, axes_y / height, span / width, axes_h / height])
+
+        ax_a, ax_b = axes(.46, .74), axes(1.70, .88)
+        ax_c, ax_d = axes(2.83, .96), axes(4.46, .86)
+        # Panel (d)'s title starts over its dataset labels, as in Figure 3.
+        for x, title, note in [(.46, "(a) Value extraction", "MedCalc, official test"),
+                               (1.70, "(b) Calculators", "MedCalc, official test"),
+                               (2.83, "(c) BANKING77", "Five intents"),
+                               (3.88, "(d) Without feature names",
+                                "CLIPPER (tools), $n=250$")]:
+            fig.text(x / width, 1 - .06 / height, title, fontsize=TITLE_SIZE,
+                     ha="left", va="top")
+            fig.text(x / width, 1 - .215 / height, note, fontsize=NOTE_SIZE, color=MUTED,
+                     ha="left", va="top")
+        ext_handles = draw_extraction(ax_a)
+        med_handles = draw_lines(ax_b, medcalc, list(MEDCALC_STYLES), MEDCALC_STYLES)
+        bank_handles = draw_lines(ax_c, banking, list(BANKING77_STYLES), BANKING77_STYLES)
+        draw_anonymization(ax_d, paired)
+        ax_d.set_xlabel("Anonymized − natural\nerror (pp)", labelpad=3, linespacing=1.15)
+        ax_b.set_ylabel("Test error (%)", labelpad=3)
+        ax_b.set_xscale("log", base=2)
+        ax_b.set_xlim(43, 4200)
+        ax_b.set_xticks(list(PLOTTED_SIZE.values()), ["55", "220", "880", "3.3k"])
         ax_b.xaxis.set_minor_locator(NullLocator())
-        ax_b.set_ylim(12, 37)
-        ax_b.set_yticks([15, 20, 25, 30, 35])
+        ax_b.set_ylim(50, 92)
+        ax_b.set_yticks([50, 60, 70, 80, 90])
         ax_b.set_xlabel("Training examples", labelpad=3)
+        ax_c.set_xscale("log")
+        ax_c.set_xlim(42, 710)
+        # 400 and 600 sit too close on a log axis for both labels; 400 keeps its tick.
+        ax_c.set_xticks(BANKING77_SIZES, ["50", "100", "200", "", "600"])
+        ax_c.xaxis.set_minor_locator(NullLocator())
+        ax_c.set_ylim(0, 57)
+        ax_c.set_yticks([0, 10, 20, 30, 40, 50])
+        ax_c.set_xlabel("Training examples", labelpad=3)
         legend = dict(loc="upper left", frameon=False, handlelength=1.4, handletextpad=.4,
                       columnspacing=.7, labelspacing=.4, borderaxespad=0, fontsize=LEGEND_SIZE)
+        legend_y = .52 / height
+        fig.legend([ext_handles[b] for b in EXTRACTION_STYLES] + [ext_handles["pool"]],
+                   [v[0] for v in EXTRACTION_STYLES.values()] + [POOL[0]],
+                   bbox_to_anchor=(.03 / width, legend_y), ncol=1, **legend)
         fig.legend([med_handles[l] for l in MEDCALC_STYLES],
                    [v[0] for v in MEDCALC_STYLES.values()],
-                   bbox_to_anchor=(.005, .255), ncol=1, **legend)
-        fig.legend([text_handles[l] for l in TEXT_STYLES], [v[0] for v in TEXT_STYLES.values()],
-                   bbox_to_anchor=(.33, .255), ncol=1, **legend)
+                   bbox_to_anchor=(1.34 / width, legend_y), ncol=1, **legend)
+        fig.legend([bank_handles[l] for l in BANKING77_STYLES],
+                   [v[0] for v in BANKING77_STYLES.values()],
+                   bbox_to_anchor=(2.83 / width, legend_y), ncol=1, **legend)
         save(fig, "figure4-text", dpi=300)
-
-
-# ---------------------------------------------------------------------------
-# Banking77: CLIPPER and RuleChef on RuleChef's five-intent benchmark
-# ---------------------------------------------------------------------------
-
-BANKING77_SIZES = [50, 100, 200, 400, 600]
-# CLIPPER with coverage tools takes the lighter blue, as in Figure 3.
-BANKING77_STYLES = {
-    "clipper_raw_M100_tools": ("CLIPPER (tools)", CLIPPER_TOOLS, "v", "-"),
-    "clipper_raw_M100": ("CLIPPER (no tools)", CLIPPER, "^", "-"),
-    "rulechef": ("RuleChef", RULECHEF, "s", "-"),
-}
-
-
-def load_banking77():
-    """Per-seed test error (%) on the five BANKING77 intents; ten seeds per cell."""
-    frame = pd.read_csv(RESULTS / "text/banking77-runs.csv")
-    seeds = frame.groupby(["label", "size"]).seed.nunique()
-    assert len(seeds) == len(BANKING77_STYLES) * len(BANKING77_SIZES) and (seeds == 10).all()
-    return frame
-
-
-def banking77_summary():
-    return load_banking77().groupby(["label", "size"]).err.agg(
-        mean_error="mean", sem=sem).reset_index()
-
-
-def banking77():
-    """banking77."""
-    summary = banking77_summary()
-    labels = list(BANKING77_STYLES)
-    plt.rcdefaults()
-    with plt.rc_context(FIG_RC):
-        fig = plt.figure(figsize=(3.7, 2.0))
-        ax = fig.add_axes([.115, .2, .5, .74])
-        handles = draw_lines(ax, summary, labels, BANKING77_STYLES)
-        ax.set_xscale("log")
-        ax.set_xlim(42, 710)
-        # 400 and 600 sit too close on a log axis for both labels; 400 keeps its tick.
-        ax.set_xticks(BANKING77_SIZES, ["50", "100", "200", "", "600"])
-        ax.xaxis.set_minor_locator(NullLocator())
-        ax.set_ylim(0, 57)
-        ax.set_yticks([0, 10, 20, 30, 40, 50])
-        ax.set_xlabel("Training examples", labelpad=3)
-        ax.set_ylabel("Test error (%)", labelpad=3)
-        fig.legend([handles[l] for l in labels], [BANKING77_STYLES[l][0] for l in labels],
-                   loc="center left", bbox_to_anchor=(.645, .57), frameon=False,
-                   handlelength=1.4, handletextpad=.4, labelspacing=.4, borderaxespad=0,
-                   fontsize=LEGEND_SIZE)
-        save(fig, "banking77", dpi=300)
 
 
 # ---------------------------------------------------------------------------
@@ -597,7 +602,7 @@ def build_all():
     """Build every figure, in paper order; returns the output file stems."""
     builders = [("tabular-main", figure1_overview), ("all-baselines", all_baselines),
                 ("figure3-tabular", figure3_tabular), ("figure4-text", figure4_text),
-                ("banking77", banking77), ("new-sol-behavior", sol_behavior)]
+                ("new-sol-behavior", sol_behavior)]
     for _, build in builders:
         build()
     return [name for name, _ in builders]

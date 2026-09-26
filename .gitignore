@@ -15,7 +15,6 @@ __pycache__/
 /tuning_suite/hypothyroid/
 /anon_suite/
 /datasets/medcalc_*/
-/pdata/
 
 # Experiment outputs
 /runs/
