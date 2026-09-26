@@ -45,6 +45,8 @@ TABLE_TITLES = {
     "hero-250-harness": "Appendix: alternative harnesses, n=250 (per dataset)",
     "hero-1200-harness": "Appendix: alternative harnesses, n=1,200 (per dataset)",
     "hero-punchline-curve": "Appendix: complete learning-curve results (per dataset)",
+    "text-suite-error": "Appendix: text datasets, test error per dataset (%)",
+    "text-post-cutoff-error": "Appendix: post-cutoff text dataset (Inflation Research Abstracts), test error (%)",
     "banking77-error": "Appendix: BANKING77, CLIPPER and RuleChef test error (%)",
     "new-harness-full": "Appendix: complete coding-agent comparison, n=250",
     "new-anonymization-full": "Appendix: anonymization on all eight datasets, n=250",

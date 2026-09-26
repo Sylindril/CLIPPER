@@ -183,6 +183,32 @@ agent --label agent_gpt56_sol_norun --agent codex --model gpt-5.6-sol --forbid-l
 learning algorithm. The condition without it is "Sol (spec gaming)" in the
 appendix.
 
+### Text classification and background knowledge (Figure 4b and the text-datasets appendix)
+
+```bash
+TSIZES=50,100,200,300,400,500,750
+OLD=(--schema-format compressed --example-format dict --prompt-variant baseline -T0
+     --no-lambda-body-tool --tools-prompt baseline)
+txt() { uv run python scripts/run_learning_curve.py --min-bestj 0 --sizes $TSIZES "$@"; }
+# `text`: the five text datasets; `recent`: the dataset whose labels were
+# published after the model's training cutoff
+for S in text recent; do
+  txt --suite $S --label slipper      -- -R ''
+  txt --suite $S --label slopper_text -- -R $FL "${OLD[@]}" --use-text    # CLIPPER on the raw text
+  txt --suite $S --label slopper      -- -R $FL "${OLD[@]}" --hide-text   # CLIPPER on the word sets
+  uv run python scripts/run_baseline_curve.py --suite $S --sizes $TSIZES \
+      --models hstree,figs,tao_tree,boosted_rules,corels
+done
+```
+
+Each document has its raw text (`TEXT`) and its set of words (`WORDS`).
+`--use-text` gives CLIPPER the raw text and permits regular expressions;
+`--hide-text` restricts it to the word sets that SLIPPER searches. The imodels
+baselines use TF-IDF features (CORELS uses word-presence indicators). These
+CLIPPER runs predate the tuned `-R` default, so their flags are spelled out (no
+coverage tools, `M=100`); they reproduce the original prompts except for one
+blank line. These runs used no minimum round budget (`--min-bestj 0`).
+
 ### BANKING77: CLIPPER and RuleChef (Figure 4c and the BANKING77 appendix)
 
 ```bash
@@ -211,7 +237,7 @@ the `err_strict` column counts them as errors instead. `run` can be resumed and
 runs cells in parallel; the grid also defines full-data SLIPPER cells, which the
 paper does not report.
 
-### MedCalc: value extraction and calculator prediction (Figures 4a–b and the MedCalc appendix)
+### MedCalc: value extraction and calculator prediction (Figure 4a and the MedCalc appendix)
 
 ```bash
 uv run python src/tools/build_medcalc_extraction_suite.py        # once

@@ -66,10 +66,9 @@ development-suite comparisons.
 
 ## Text-classification suite (`text_suite/`, 5 datasets)
 
-The paper does not report results on this suite; `src/tools/build_banking77.py`
-reuses its encoding. Each document keeps its raw text (`TEXT`)
-and its set of words (`WORDS`); each dataset has a stratified 25% test split
-(seed 1). See `src/tools/build_text_suite.py` for tokenization.
+Used for Figure 4(b) and the text-datasets appendix. Each document keeps its
+raw text (`TEXT`) and its set of words (`WORDS`); each dataset has a stratified
+25% test split (seed 1). See `src/tools/build_text_suite.py` for tokenization.
 
 | Dataset | Source | Citation |
 |---|---|---|
@@ -82,8 +81,7 @@ and its set of words (`WORDS`); each dataset has a stratified 25% test split
 `inflation_abstracts`: economics-inflation research abstracts labeled by
 whether they use machine-learning methods (UCI dataset 1125, 2025). The labels
 were published after the model's training cutoff. It is encoded like the text
-suite (`TEXT` and `WORDS`) with a stratified 25% test split. The paper does not
-report results on it.
+suite (`TEXT` and `WORDS`) with a stratified 25% test split.
 
 ## BANKING77 (five intents)
 

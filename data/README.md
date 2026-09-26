@@ -49,6 +49,9 @@ All rendered labels use the paper's names.
 | `slopper_raw_M20`, `slopper_raw_M100` | CLIPPER on raw MedCalc notes, M=20 / 100 |
 | `slipper_full`, `slipper_M20`, `slipper_M100` (MedCalc) | SLIPPER on note word sets, full data / M=20 / M=100 |
 | `extract_pool`, `extract_{python,regex}_M{20,55,110}` | hand-written regex pool; CLIPPER Python / regex extraction rules |
+| `slopper_text` (text datasets) | CLIPPER on raw text, regular expressions allowed, no coverage tools, M=100 |
+| `slopper` (text datasets) | CLIPPER reading each document's set of words (SLIPPER's input), no coverage tools, M=100 |
+| `slipper`, `hstree`, `figs`, `tao_tree`, `boosted_rules`, `corels` (text datasets) | full-data SLIPPER on word sets; imodels baselines on TF-IDF features (CORELS on word-presence indicators) |
 | `clipper_raw_M100`, `clipper_raw_M100_tools` (Banking77) | CLIPPER on raw query text, M=100, without / with coverage tools (at most six calls per proposal); one-versus-rest over the five intents |
 | `rulechef` (Banking77) | RuleChef 0.2.2 run through its authors' BANKING77 script with their published settings, same model; unmatched queries get the training subset's majority intent |
 
@@ -89,8 +92,7 @@ All error, accuracy, precision, recall, and F1 values are percentages.
   1,100-row official test split, one row per condition, training cap, and seed.
   Columns: `condition`, `cap` (training notes per calculator), `seed`, `split`,
   `n_eval`, `accuracy` (exact accuracy from centered scores), `macro_f1`,
-  `accuracy_uncentered`. Used by Table `calculator-final-repeats` and Figure
-  4(b) (plotted as 100 minus accuracy).
+  `accuracy_uncentered`. Used by Table `calculator-final-repeats`.
 - **`value-extraction-seeds.csv`**: value extraction on the official test split
   (500 rows, 1,120 requested values, ten keys). Columns: `condition`, `M`,
   `seed`, `split`, `keys`, `rows`, `tp`, `fp`, `fn`, `micro_p`, `micro_r`,
@@ -116,6 +118,19 @@ All error, accuracy, precision, recall, and F1 values are percentages.
 
 ### `results/text/`
 
+- **`text-runs.csv`**: text classification on five datasets (`sms_spam`,
+  `sentiment_amazon`, `sentiment_imdb`, `sentiment_yelp`, `youtube_spam`),
+  sizes 50 to 750, ten seeds, for CLIPPER without tools on raw text
+  (`slopper_text`) and on word sets (`slopper`), full-data SLIPPER, and the
+  imodels baselines. Columns: `label`, `dataset`, `size`, `seed`, `err` (test
+  error %). Used by Figure 4(b), Table `text-suite-error`, and the numbers in
+  the text-classification and background-knowledge paragraphs and the
+  text-datasets appendix.
+- **`recent-runs.csv`**: the same columns and methods on
+  `inflation_abstracts`, a text dataset whose labels were published after the
+  model's training cutoff; sizes 50 to 750, ten seeds. Used by Table
+  `text-post-cutoff-error` and the n=750 comparison in the background-knowledge
+  paragraph.
 - **`banking77-runs.csv`**: CLIPPER and RuleChef on the five BANKING77
   intents of RuleChef's own benchmark, sizes 50 to 600, ten seeds, scored on
   the 200 official test queries. Columns: `label`, `size`, `seed`, `err` (test
@@ -124,10 +139,6 @@ All error, accuracy, precision, recall, and F1 values are percentages.
   `rules` (rules in the final model, summed over the five one-versus-rest
   models for CLIPPER), `llm_calls`, `cost_usd`. Used by Figure 4(c) and Table
   `banking77-error`.
-- **`text-runs.csv`**, **`recent-runs.csv`**: `label`, `dataset`, `size`,
-  `seed`, `err` for an earlier text-classification experiment (five text
-  datasets, and `inflation_abstracts`) that the paper does not report. No
-  output uses them.
 
 ### `results/model-complexity/`
 
@@ -164,12 +175,13 @@ All error, accuracy, precision, recall, and F1 values are percentages.
 | Figure 1 | `tabular-main` |
 | Figure 2 | `all-baselines` |
 | Figure 3 (tabular: equal examples, condition hints, rule learners) | `figure3-tabular` |
-| Figure 4 (value extraction, MedCalc calculators, BANKING77 with RuleChef, anonymized feature names) | `figure4-text` |
+| Figure 4 (value extraction, text datasets, BANKING77 with RuleChef, anonymized feature names) | `figure4-text` |
 | Main tables | `outer-loop-main`, `agents-main`, `backends-main` |
 | MedCalc appendix | `calculator-final-repeats`, `extraction-final-repeats` |
 | Development appendix | `development-configurations` (inline table), `harness-main`, `setcover-development` (inline table) |
 | Dataset-level results appendix | `fixed-seven-summary`, `hero-250-symbolic`, `hero-1200-symbolic-corrected`, `hero-250-slopslip`, `hero-1200-slopslip`, `hero-250-harness`, `hero-1200-harness`, `hero-punchline-curve` |
 | Coding-agent appendix | `new-harness-full`, `new-sol-behavior` (figure), `new-anonymization-full`, `new-backend-full` |
+| Text-datasets appendix | `text-suite-error`, `text-post-cutoff-error` |
 | BANKING77 appendix (comparison with RuleChef) | `banking77-error` |
 | Model-complexity appendix | `model-complexity` |
 

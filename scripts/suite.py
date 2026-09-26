@@ -74,7 +74,7 @@ TUNING = Suite("tuning", "tuning_suite", DATASETS, BESTJ,
 # dataset but college (750 train rows) runs the full range, so D=8/8/8/7/7.
 TEST = Suite("test", "test_suite", TEST_DATASETS,
              sizes=[100, 250, 600, 1200, 2000])
-# Text-classification suite (not reported in the paper).
+# Text-classification suite.
 TEXT = Suite("text", "text_suite",
              ["sentiment_amazon", "sentiment_imdb", "sentiment_yelp",
               "sms_spam", "youtube_spam"],

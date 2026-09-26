@@ -7,11 +7,10 @@ import numpy as np
 import pandas as pd
 
 from .common import (EIGHT, RESULTS, SEVEN, fmt, load_agents, load_anonymized,
-                     load_calculator, load_extraction, load_symbolic_baselines,
+                     load_extraction, load_symbolic_baselines,
                      load_tabular, macro, macro_table, sem)
-from .figures import (BANKING77_SIZES, CURVE_SIZES, banking77_summary,
-                      calculator_error_summary, load_banking77, rule_learner_summary,
-                      sol_pairs)
+from .figures import (BANKING77_SIZES, CURVE_SIZES, TEXT_SIZES, banking77_summary,
+                      load_banking77, rule_learner_summary, sol_pairs, text_summary)
 from .tables import anonymization_pairs, n250_summary
 
 
@@ -116,9 +115,6 @@ def agent_numbers():
     out.append(("Sec. (background knowledge), Fig. 4d", "Anonymization, all eight: original -> anonymized; paired change",
                 f"{pm(part(cells, 'nm', 'ns'))} -> {pm(part(cells, 'am', 'as_'))}; "
                 f"{pm(part(cells, 'dm', 'ds'))}"))
-    seven = cells.loc[SEVEN]
-    out.append(("Sec. (background knowledge)", "Anonymized CLIPPER, fixed seven",
-                pm(part(seven, "am", "as_"))))
 
     s = {l: n250_summary(raw, l) for l in raw.label.unique()}
     seven = lambda l: s[l]["seven"]
@@ -162,23 +158,50 @@ def agent_numbers():
 
 
 def medcalc_numbers():
-    where = "Sec. (text classification), Fig. 4b"
-    err = calculator_error_summary("final").set_index(["label", "cap"])
-    get = lambda l, c: (err.loc[(l, c), "mean_error"], err.loc[(l, c), "sem"])
-    out = []
-    for cap in [1, 4, 16, 64]:
-        out.append((where, f"Cap {cap}: test error CLIPPER M=20 / SLIPPER M=20 / full SLIPPER",
-                    f"{pm(get('slopper_raw_M20', cap))} / {pm(get('slipper_M20', cap))} / "
-                    f"{pm(get('slipper_full', cap))}"))
-    gaps = [get("slipper_M20", c)[0] - get("slopper_raw_M20", c)[0] for c in [4, 16, 64]]
-    out.append((where, "SLIPPER M=20 minus CLIPPER M=20 at caps 4, 16, 64",
-                ", ".join(fmt(g) for g in gaps)))
     ext = load_extraction()
     ext = ext[ext.split == "final"].groupby("condition")[["micro_p", "micro_r", "micro_f1"]]
     m = ext.mean()
-    out.append(("Sec. (value-returning rules), Fig. 4a", "Python M=55 micro F1 vs pool",
+    return [("Sec. (value-returning rules), Fig. 4a", "Python M=55 micro F1 vs pool",
                 f"{fmt(m.loc['extract_python_M55', 'micro_f1'])} vs "
-                f"{fmt(m.loc['extract_pool', 'micro_f1'])}"))
+                f"{fmt(m.loc['extract_pool', 'micro_f1'])}")]
+
+
+def text_numbers():
+    """Text classification (Figure 4b), background knowledge, and the text appendix."""
+    where = "Sec. (text classification), Fig. 4b"
+    baselines = ["hstree", "figs", "tao_tree", "boosted_rules", "corels"]
+    s = text_summary(["slopper_text", "slopper", "slipper"] + baselines)
+    s = s.set_index(["label", "size"])
+    get = lambda l, n: (s.loc[(l, n), "mean_error"], s.loc[(l, n), "sem"])
+    out = [(where, f"n={n}: macro error, CLIPPER raw text / word sets / full-data SLIPPER / HS-Tree",
+            " / ".join(pm(get(l, n)) for l in ["slopper_text", "slopper", "slipper", "hstree"]))
+           for n in [50, 750]]
+    where = "Sec. (background knowledge), Fig. 4b"
+    words = [n for n in TEXT_SIZES if get("slopper", n)[0] < get("slipper", n)[0]]
+    out.append((where, "Sizes where CLIPPER on word sets beats full-data SLIPPER",
+                f"{len(words)} of {len(TEXT_SIZES)}"))
+    for n in [50, 750]:
+        out.append((where, f"n={n}: CLIPPER on word sets vs full-data SLIPPER",
+                    f"{fmt(get('slopper', n)[0])} vs {fmt(get('slipper', n)[0])}"))
+    best = {n: min(baselines, key=lambda l: s.loc[(l, n), "mean_error"]) for n in TEXT_SIZES}
+    out.append(("App. text datasets", "Lowest-error imodels baseline by size",
+                ", ".join(f"{n}: {best[n]}" for n in TEXT_SIZES)))
+    out.append(("App. text datasets", "HS-Tree minus FIGS at n=50, 100",
+                ", ".join(fmt(get("hstree", n)[0] - get("figs", n)[0]) for n in [50, 100])))
+    # Inflation Research Abstracts, whose labels were published after the
+    # model's training cutoff.
+    recent = pd.read_csv(RESULTS / "text/recent-runs.csv")
+    r = recent.groupby(["size", "label"]).err.agg(["mean", "count"])
+    assert (r["count"] == 10).all()
+    lowest_raw = [n for n in TEXT_SIZES if r.loc[n, "mean"].idxmin() == "slopper_text"]
+    out.append(("Sec. (background knowledge); App. text datasets",
+                "Post-cutoff dataset: sizes where CLIPPER on raw text has the lowest error",
+                f"{len(lowest_raw)} of {len(TEXT_SIZES)}"))
+    r750 = r.loc[750, "mean"]
+    out.append(("Sec. (background knowledge); App. text datasets",
+                "Post-cutoff dataset, n=750: CLIPPER raw text vs full-data SLIPPER vs "
+                "CLIPPER word sets",
+                f"{fmt(r750['slopper_text'])} vs {fmt(r750['slipper'])} vs {fmt(r750['slopper'])}"))
     return out
 
 
@@ -217,5 +240,6 @@ def banking77_numbers():
 
 
 def all_numbers():
-    return (tabular_numbers() + agent_numbers() + medcalc_numbers() + banking77_numbers()
+    return (tabular_numbers() + agent_numbers() + medcalc_numbers() + text_numbers()
+            + banking77_numbers()
             + complexity_numbers() + setcover_numbers())

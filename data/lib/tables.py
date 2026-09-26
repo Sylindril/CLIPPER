@@ -482,6 +482,64 @@ def new_anonymization_full(raw, anon):
     return write_tabular("new-anonymization-full", "lrrr", rows)
 
 
+# ---------------------------------------------------------------------------
+# Text datasets appendix (CLIPPER without tools, SLIPPER, imodels baselines)
+# ---------------------------------------------------------------------------
+
+TEXT_NAMES = {"sms_spam": "SMS spam", "sentiment_amazon": "Amazon",
+              "sentiment_imdb": "IMDb", "sentiment_yelp": "Yelp",
+              "youtube_spam": "YouTube spam"}
+TEXT_METHODS = {"slopper_text": "CLIPPER (no tools)", "slipper": "SLIPPER, full data",
+                "hstree": "HS-Tree"}
+POST_CUTOFF_METHODS = {"slopper_text": "CLIPPER, raw text", "slopper": "CLIPPER, word sets",
+                       "slipper": "SLIPPER, full data", "hstree": "HS-Tree",
+                       "boosted_rules": "Boosted stumps", "corels": "CORELS",
+                       "figs": "FIGS", "tao_tree": "TAO tree"}
+
+
+def error_rows(block, methods, sizes):
+    """One row per method of mean±SEM cells; bold is the lowest per size."""
+    best = {n: lowest([block.loc[(l, n), "mean"] for l in methods]) for n in sizes}
+    rows = []
+    for i, (label, method) in enumerate(methods.items()):
+        cells = []
+        for n in sizes:
+            body = f"{fmt(block.loc[(label, n), 'mean'])}{{\\pm}}{fmt(block.loc[(label, n), 'sem'])}"
+            cells.append(f"$\\boldsymbol{{{body}}}$" if best[n][i] else f"${body}$")
+        rows.append([method] + cells)
+    return rows
+
+
+def text_suite_error():
+    """Test error per text dataset and training size, and the five-dataset macro."""
+    from .figures import TEXT_DATASETS, TEXT_SIZES, load_text
+    frame = load_text()
+    frame = frame[frame.label.isin(TEXT_METHODS)]
+    stats = frame.groupby(["dataset", "label", "size"]).err.agg(mean="mean", sem=sem)
+    blocks = [(TEXT_NAMES[d], stats.loc[d]) for d in TEXT_DATASETS]
+    blocks.append(("Macro", stats.groupby(["label", "size"]).apply(macro).apply(
+        pd.Series).set_axis(["mean", "sem"], axis=1)))
+    rows = [["Method"] + [f"$n={n}$" for n in TEXT_SIZES]]
+    for name, block in blocks:
+        rows += [r"\midrule", rf"\multicolumn{{{len(TEXT_SIZES) + 1}}}{{@{{}}l}}{{\textit{{{name}}}}} \\"]
+        rows += error_rows(block, TEXT_METHODS, TEXT_SIZES)
+    return write_tabular("text-suite-error", "l" + "r" * len(TEXT_SIZES), rows)
+
+
+def text_post_cutoff_error():
+    """Test error on inflation_abstracts, whose labels postdate the model's cutoff."""
+    from .figures import TEXT_SIZES
+    frame = pd.read_csv(RESULTS / "text/recent-runs.csv")
+    frame = frame[frame.label.isin(POST_CUTOFF_METHODS) & frame["size"].isin(TEXT_SIZES)]
+    stats = frame.groupby(["label", "size"]).err.agg(mean="mean", sem=sem, seeds="count")
+    assert len(stats) == len(POST_CUTOFF_METHODS) * len(TEXT_SIZES) and (stats.seeds == 10).all()
+    rows = [["Method"] + [f"$n={n}$" for n in TEXT_SIZES], r"\midrule"]
+    body = error_rows(stats, POST_CUTOFF_METHODS, TEXT_SIZES)
+    # CLIPPER and SLIPPER first, then the imodels baselines.
+    rows += body[:3] + [r"\midrule"] + body[3:]
+    return write_tabular("text-post-cutoff-error", "l" + "r" * len(TEXT_SIZES), rows)
+
+
 def banking77_error():
     """Banking77 test error per size, mean and SEM over ten seeds; bold is the lowest."""
     from .figures import BANKING77_SIZES, BANKING77_STYLES, banking77_summary
@@ -516,6 +574,8 @@ def build_all():
     }
     tables.update(hero_tables(tab))
     tables.update({
+        "text-suite-error": text_suite_error(),
+        "text-post-cutoff-error": text_post_cutoff_error(),
         "banking77-error": banking77_error(),
         "new-harness-full": new_harness_full(raw),
         "new-anonymization-full": new_anonymization_full(raw, anon),
